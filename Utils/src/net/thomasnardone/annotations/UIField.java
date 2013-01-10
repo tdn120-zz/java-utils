@@ -11,6 +11,6 @@ public @interface UIField {
 	Type value() default Type.Text;
 
 	public enum Type {
-		Combo, Date, EditText, Spinner, Text
+		Combo, Date, EditText, Text
 	}
 }
