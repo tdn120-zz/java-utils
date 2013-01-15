@@ -6,6 +6,10 @@ package net.thomasnardone.utils;
  * @author Thomas Nardone
  */
 public class NullUtil {
+	public static boolean equals(final Object o1, final Object o2) {
+		return (o1 == o2) || ((o1 != null) && o1.equals(o2));
+	}
+
 	/**
 	 * @return <tt>value</tt>, unless it is <tt>null</tt>. In that case it returns <tt>defaultValue</tt>.
 	 */
