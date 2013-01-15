@@ -3,6 +3,7 @@ package net.thomasnardone.utils;
 import java.util.Comparator;
 
 import net.thomasnardone.utils.comparator.string.AscendingIgnoreCase;
+import net.thomasnardone.utils.comparator.string.ToStringComparator;
 
 public class StringUtil {
 	public static final int	COMPARE_ASCENDING_IGNORE_CASE	= 1;
@@ -11,9 +12,13 @@ public class StringUtil {
 		return s.replaceFirst(String.valueOf(s.charAt(0)), String.valueOf(Character.toUpperCase(s.charAt(0))));
 	}
 
+	public static Comparator<String> comparator() {
+		return comparator(COMPARE_ASCENDING_IGNORE_CASE);
+	}
+
 	public static Comparator<String> comparator(final int type) {
 		switch (type) {
-			case 1:
+			case COMPARE_ASCENDING_IGNORE_CASE:
 				return new AscendingIgnoreCase();
 			default:
 				return new AscendingIgnoreCase();
@@ -36,5 +41,13 @@ public class StringUtil {
 		s = s.replaceAll(
 				String.format("%s|%s|%s", "(?<=[A-Z])(?=[A-Z][a-z])", "(?<=[^A-Z])(?=[A-Z])", "(?<=[A-Za-z])(?=[^A-Za-z])"), " ");
 		return capitalize(s);
+	}
+
+	public static Comparator<Object> toStringComparator() {
+		return toStringComparator(COMPARE_ASCENDING_IGNORE_CASE);
+	}
+
+	public static Comparator<Object> toStringComparator(final int type) {
+		return new ToStringComparator(comparator(type));
 	}
 }
