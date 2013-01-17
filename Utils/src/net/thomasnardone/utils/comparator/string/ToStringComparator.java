@@ -20,5 +20,4 @@ public class ToStringComparator implements Comparator<Object> {
 			return stringComparator.compare(lhs.toString(), rhs.toString());
 		}
 	}
-
 }
