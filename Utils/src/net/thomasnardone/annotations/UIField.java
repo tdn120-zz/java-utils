@@ -10,6 +10,8 @@ import java.lang.annotation.Target;
 public @interface UIField {
 	Type value() default Type.Text;
 
+	int width() default 100;
+
 	public enum Type {
 		Combo, Date, EditText, Text
 	}
