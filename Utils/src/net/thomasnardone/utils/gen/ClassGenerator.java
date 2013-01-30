@@ -112,7 +112,7 @@ public abstract class ClassGenerator extends AbstractGenerator {
 	}
 
 	private void writeClassToFile() throws FileNotFoundException {
-		openWriter(new File("src/" + packageName.replaceAll("\\.", "/") + "/" + className + getName() + ".java"));
+		openWriter(new File(getSourcePath() + packageName.replaceAll("\\.", "/") + "/" + className + getName() + ".java"));
 		writeln("package " + packageName + ";");
 		writeln();
 		for (Class<?> importClass : imports) {
@@ -164,5 +164,9 @@ public abstract class ClassGenerator extends AbstractGenerator {
 		writeln("}");
 
 		closeWriter();
+	}
+
+	protected String getSourcePath() {
+		return "src/";
 	}
 }
