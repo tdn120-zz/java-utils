@@ -24,6 +24,8 @@ public class SimpleSearchAndReplace extends SearchAndReplaceGenerator {
 		replaceMethod("method5", getMethod("method5"), preserveAnnotations);
 		replaceMethod("method6", getMethod("method6"), preserveAnnotations);
 		replaceMethod("method7", getMethod("method7"), preserveAnnotations);
+		replaceMethod("method8", getMethod("method8"), preserveAnnotations);
+		replaceMethod("method9", getMethod("method9"), preserveAnnotations);
 	}
 
 	@Override
