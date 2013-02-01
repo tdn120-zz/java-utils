@@ -106,6 +106,10 @@ public abstract class ClassGenerator extends AbstractGenerator {
 		return packageName;
 	}
 
+	protected String getSourcePath() {
+		return "src/";
+	}
+
 	protected void implement(final Class<?> clazz) {
 		interfaces.add(clazz);
 		addImport(clazz);
@@ -164,9 +168,5 @@ public abstract class ClassGenerator extends AbstractGenerator {
 		writeln("}");
 
 		closeWriter();
-	}
-
-	protected String getSourcePath() {
-		return "src/";
 	}
 }
