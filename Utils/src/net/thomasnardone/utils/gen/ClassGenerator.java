@@ -90,7 +90,7 @@ public abstract class ClassGenerator extends AbstractGenerator {
 		parentClass = className;
 	}
 
-	protected abstract void generateStuff();
+	protected abstract void generateStuff() throws Exception;
 
 	protected String getConstructorName() {
 		return className + getName();
@@ -110,9 +110,21 @@ public abstract class ClassGenerator extends AbstractGenerator {
 		return "src/";
 	}
 
+	protected final String getter(final Field field) {
+		return (isBoolean(field.getType()) ? "is" : "get") + StringUtil.capitalize(field.getName());
+	}
+
 	protected void implement(final Class<?> clazz) {
 		interfaces.add(clazz);
 		addImport(clazz);
+	}
+
+	protected final boolean isBoolean(final Class<?> type) {
+		return type.isPrimitive() && "boolean".equals(type.getName());
+	}
+
+	protected final String setter(final Field field) {
+		return "set" + StringUtil.capitalize(field.getName());
 	}
 
 	private void writeClassToFile() throws FileNotFoundException {
