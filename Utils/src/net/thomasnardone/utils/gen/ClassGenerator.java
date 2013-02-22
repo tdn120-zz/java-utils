@@ -45,7 +45,7 @@ public abstract class ClassGenerator extends AbstractGenerator {
 		innerClasses = new LinkedList<List<String>>();
 		declaredFields = new LinkedList<Field>();
 		for (Field field : clazz.getDeclaredFields()) {
-			if (!Modifier.isTransient(field.getModifiers())) {
+			if (!(Modifier.isTransient(field.getModifiers()) || Modifier.isStatic(field.getModifiers()))) {
 				declaredFields.add(field);
 			}
 		}
