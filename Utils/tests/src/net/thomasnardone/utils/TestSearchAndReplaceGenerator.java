@@ -31,7 +31,6 @@ public class TestSearchAndReplaceGenerator {
 
 	@Test(timeout = 2000)
 	public void testMethodReplacement() throws Exception {
-		System.out.println("Annotations Test");
 		new SimpleSearchAndReplace("java.lang.Object", "gen", true).generate();
 		compareFiles(SOURCE_FILE, "tests/res/ReplacedWithAnnotation.txt");
 		new File(SOURCE_FILE).delete();
@@ -39,7 +38,6 @@ public class TestSearchAndReplaceGenerator {
 
 	@Test(timeout = 2000)
 	public void testMethodReplacementNoAnnotations() throws Exception {
-		System.out.println("No Annotations Test");
 		new SimpleSearchAndReplace("java.lang.Object", "gen", false).generate();
 		compareFiles(SOURCE_FILE, "tests/res/ReplacedWithoutAnnotation.txt");
 		new File(SOURCE_FILE).delete();
@@ -50,7 +48,6 @@ public class TestSearchAndReplaceGenerator {
 		BufferedReader expectedReader = new BufferedReader(new FileReader(expectedFile));
 		String actual = actualReader.readLine();
 		String expected = expectedReader.readLine();
-		System.err.println("Entering while loop");
 		int count = 1;
 		while (expected != null) {
 			Assert.assertNotNull(actual);
@@ -59,7 +56,6 @@ public class TestSearchAndReplaceGenerator {
 			expected = expectedReader.readLine();
 			count++;
 		}
-		System.err.println("Exiting while loop");
 		Assert.assertNull(actualReader.readLine());
 		actualReader.close();
 		expectedReader.close();

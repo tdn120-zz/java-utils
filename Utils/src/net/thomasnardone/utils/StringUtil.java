@@ -50,4 +50,10 @@ public class StringUtil {
 	public static Comparator<Object> toStringComparator(final int type) {
 		return new ToStringComparator(comparator(type));
 	}
+
+	public static String underscore(String s) {
+		s = s.replaceAll(
+				String.format("%s|%s|%s", "(?<=[A-Z])(?=[A-Z][a-z])", "(?<=[^A-Z])(?=[A-Z])", "(?<=[A-Za-z])(?=[^A-Za-z])"), "_");
+		return s.toLowerCase();
+	}
 }

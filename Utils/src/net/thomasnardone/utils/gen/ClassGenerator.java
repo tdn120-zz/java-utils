@@ -14,10 +14,17 @@ import net.thomasnardone.utils.StringUtil;
 import net.thomasnardone.utils.comparator.ClassNameComparator;
 
 public abstract class ClassGenerator extends AbstractGenerator {
+	protected static Params getParams(final Class<?> baseClass) {
+		String className = new ClassSelectionDialog(baseClass).select();
+		String packageName = new PackageSelectionDialog().select();
+		return new Params(className, packageName);
+	}
+
 	protected final String				className;
 	protected final Class<?>			clazz;
 	protected final String				packageName;
 	protected final String				paramName;
+	protected final String				propName;
 	private final List<Field>			declaredFields;
 	private final List<String>			fields;
 	private final boolean				importClass;
@@ -25,7 +32,16 @@ public abstract class ClassGenerator extends AbstractGenerator {
 	private final List<List<String>>	innerClasses;
 	private final Set<Class<?>>			interfaces;
 	private final List<List<String>>	methods;
+
 	private String						parentClass;
+
+	public ClassGenerator(final Params params) throws ClassNotFoundException {
+		this(params, true);
+	}
+
+	public ClassGenerator(final Params params, final boolean importClass) throws ClassNotFoundException {
+		this(params.getClassName(), params.getPackageName(), importClass);
+	}
 
 	public ClassGenerator(final String fullClassName, final String packageName) throws ClassNotFoundException {
 		this(fullClassName, packageName, true);
@@ -38,6 +54,7 @@ public abstract class ClassGenerator extends AbstractGenerator {
 		clazz = Class.forName(fullClassName);
 		className = clazz.getSimpleName();
 		paramName = StringUtil.deCapitalize(className);
+		propName = StringUtil.underscore(className);
 		fields = new LinkedList<String>();
 		imports = new TreeSet<Class<?>>(new ClassNameComparator());
 		interfaces = new TreeSet<Class<?>>(new ClassNameComparator());
@@ -180,5 +197,23 @@ public abstract class ClassGenerator extends AbstractGenerator {
 		writeln("}");
 
 		closeWriter();
+	}
+
+	public static class Params {
+		private final String	className;
+		private final String	packageName;
+
+		public Params(final String className, final String packageName) {
+			this.packageName = packageName;
+			this.className = className;
+		}
+
+		public String getClassName() {
+			return className;
+		}
+
+		public String getPackageName() {
+			return packageName;
+		}
 	}
 }
