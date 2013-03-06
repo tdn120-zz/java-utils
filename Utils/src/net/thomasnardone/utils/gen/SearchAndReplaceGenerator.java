@@ -22,10 +22,19 @@ public abstract class SearchAndReplaceGenerator extends AbstractGenerator {
 	private final String		fileName;
 
 	public SearchAndReplaceGenerator(final String className, final String packageName) throws ClassNotFoundException {
+		this(className, packageName, null);
+	}
+
+	public SearchAndReplaceGenerator(final String className, final String packageName, final String destClassName)
+			throws ClassNotFoundException {
 		clazz = Class.forName(className);
 		this.className = clazz.getSimpleName();
 		this.packageName = packageName;
-		fileName = getSourcePath() + packageName.replaceAll("\\.", "/") + "/" + this.className + getName() + ".java";
+		if (destClassName == null) {
+			fileName = getSourcePath() + packageName.replaceAll("\\.", "/") + "/" + this.className + getName() + ".java";
+		} else {
+			fileName = getSourcePath() + packageName.replaceAll("\\.", "/") + "/" + destClassName + ".java";
+		}
 	}
 
 	public void generate() throws IOException {
