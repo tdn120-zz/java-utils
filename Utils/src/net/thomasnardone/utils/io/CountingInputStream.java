@@ -22,7 +22,10 @@ public class CountingInputStream extends InputStream {
 
 	@Override
 	public int read() throws IOException {
-		count++;
-		return input.read();
+		final int read = input.read();
+		if (read > -1) {
+			count++;
+		}
+		return read;
 	}
 }
