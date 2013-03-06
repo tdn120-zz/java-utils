@@ -24,7 +24,11 @@ public class ClassSelectionDialog extends ReflectionSelectionDialog {
 	private final Class<?>	baseClass;
 
 	public ClassSelectionDialog(final Class<?> baseClass) {
-		super("Select Class...");
+		this(baseClass, "Select Class...");
+	}
+
+	public ClassSelectionDialog(final Class<?> baseClass, final String title) {
+		super(title);
 		this.baseClass = baseClass;
 	}
 
