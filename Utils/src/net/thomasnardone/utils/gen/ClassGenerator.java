@@ -16,7 +16,13 @@ import net.thomasnardone.utils.comparator.ClassNameComparator;
 public abstract class ClassGenerator extends AbstractGenerator {
 	protected static Params getParams(final Class<?> baseClass) {
 		String className = new ClassSelectionDialog(baseClass).select();
+		if (className == null) {
+			return null;
+		}
 		String packageName = new PackageSelectionDialog().select();
+		if (packageName == null) {
+			return null;
+		}
 		return new Params(className, packageName);
 	}
 
@@ -30,7 +36,7 @@ public abstract class ClassGenerator extends AbstractGenerator {
 	private final boolean				importClass;
 	private final Set<Class<?>>			imports;
 	private final List<List<String>>	innerClasses;
-	private final Set<Class<?>>			interfaces;
+	private final Set<String>			interfaces;
 	private final List<List<String>>	methods;
 
 	private String						parentClass;
@@ -57,7 +63,7 @@ public abstract class ClassGenerator extends AbstractGenerator {
 		propName = StringUtil.underscore(className);
 		fields = new LinkedList<String>();
 		imports = new TreeSet<Class<?>>(new ClassNameComparator());
-		interfaces = new TreeSet<Class<?>>(new ClassNameComparator());
+		interfaces = new TreeSet<String>(StringUtil.comparator());
 		methods = new LinkedList<List<String>>();
 		innerClasses = new LinkedList<List<String>>();
 		declaredFields = new LinkedList<Field>();
@@ -132,7 +138,12 @@ public abstract class ClassGenerator extends AbstractGenerator {
 	}
 
 	protected void implement(final Class<?> clazz) {
-		interfaces.add(clazz);
+		interfaces.add(clazz.getSimpleName());
+		addImport(clazz);
+	}
+
+	protected void implement(final String implementsText, final Class<?> clazz) {
+		interfaces.add(implementsText);
 		addImport(clazz);
 	}
 
@@ -162,10 +173,10 @@ public abstract class ClassGenerator extends AbstractGenerator {
 		}
 		if (!interfaces.isEmpty()) {
 			write(" implements ");
-			final Iterator<Class<?>> iterator = interfaces.iterator();
-			write(iterator.next().getSimpleName());
+			final Iterator<String> iterator = interfaces.iterator();
+			write(iterator.next());
 			while (iterator.hasNext()) {
-				write(", " + iterator.next().getSimpleName());
+				write(", " + iterator.next());
 			}
 		}
 		writeln(" {");
