@@ -8,5 +8,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DBField {
+	boolean joinField() default false;
+
+	String table() default "";
+
 	String value() default "";
 }
