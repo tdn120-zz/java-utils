@@ -87,7 +87,9 @@ public abstract class ClassGenerator extends AbstractGenerator {
 	}
 
 	protected final void addImport(final Class<?> importClass) {
-		imports.add(importClass);
+		if (!packageName.equals(importClass.getPackage().getName())) {
+			imports.add(importClass);
+		}
 	}
 
 	protected final void addInnerClass(final List<String> innerClass) {
@@ -98,19 +100,16 @@ public abstract class ClassGenerator extends AbstractGenerator {
 		methods.add(method);
 	}
 
-	protected void extend(final Class<?> clazz) {
+	protected void extend(final Class<?> clazz, final Class<?>... params) {
 		if (parentClass != null) {
 			throw new IllegalStateException("Already extending a class: " + parentClass);
 		}
-		parentClass = clazz.getSimpleName();
+		if ((params == null) || (params.length < 1)) {
+			parentClass = clazz.getSimpleName();
+		} else {
+			parentClass = clazz.getSimpleName() + getParamString(params);
+		}
 		addImport(clazz);
-	}
-
-	protected void extend(final String className) {
-		if (parentClass != null) {
-			throw new IllegalStateException("Already extending a class: " + parentClass);
-		}
-		parentClass = className;
 	}
 
 	protected abstract void generateStuff() throws Exception;
@@ -137,13 +136,12 @@ public abstract class ClassGenerator extends AbstractGenerator {
 		return (isBoolean(field.getType()) ? "is" : "get") + StringUtil.capitalize(field.getName());
 	}
 
-	protected void implement(final Class<?> clazz) {
-		interfaces.add(clazz.getSimpleName());
-		addImport(clazz);
-	}
-
-	protected void implement(final String implementsText, final Class<?> clazz) {
-		interfaces.add(implementsText);
+	protected void implement(final Class<?> clazz, final Class<?>... params) {
+		if ((params == null) || (params.length < 1)) {
+			interfaces.add(clazz.getSimpleName());
+		} else {
+			interfaces.add(clazz.getSimpleName() + getParamString(params));
+		}
 		addImport(clazz);
 	}
 
@@ -153,6 +151,17 @@ public abstract class ClassGenerator extends AbstractGenerator {
 
 	protected final String setter(final Field field) {
 		return "set" + StringUtil.capitalize(field.getName());
+	}
+
+	private String getParamString(final Class<?>... params) {
+		StringBuilder sb = new StringBuilder("<");
+		for (Class<?> paramClass : params) {
+			sb.append(paramClass.getSimpleName());
+			sb.append(",");
+			addImport(paramClass);
+		}
+		final String paramString = sb.substring(0, sb.length() - 1) + ">";
+		return paramString;
 	}
 
 	private void writeClassToFile() throws FileNotFoundException {
