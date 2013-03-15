@@ -8,9 +8,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIField {
+	String label() default "";
+
 	Type value() default Type.Text;
 
-	int width() default 100;
+	int width() default -1;
 
 	public enum Type {
 		Combo, Date, EditText, Text
