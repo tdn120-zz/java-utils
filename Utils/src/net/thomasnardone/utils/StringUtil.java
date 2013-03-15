@@ -1,5 +1,6 @@
 package net.thomasnardone.utils;
 
+import java.util.Collection;
 import java.util.Comparator;
 
 import net.thomasnardone.utils.comparator.string.AscendingIgnoreCase;
@@ -29,6 +30,13 @@ public class StringUtil {
 		return s.replaceFirst(String.valueOf(s.charAt(0)), String.valueOf(Character.toLowerCase(s.charAt(0))));
 	}
 
+	public static String[] fromCsv(final String s) {
+		if ((s == null) || s.trim().isEmpty()) {
+			return new String[0];
+		}
+		return s.split(",");
+	}
+
 	public static String pluralize(final String s) {
 		if (s.endsWith("s") || s.endsWith("sh") || s.endsWith("ch") || s.endsWith("o")) {
 			return s + "es";
@@ -41,6 +49,17 @@ public class StringUtil {
 		s = s.replaceAll(
 				String.format("%s|%s|%s", "(?<=[A-Z])(?=[A-Z][a-z])", "(?<=[^A-Z])(?=[A-Z])", "(?<=[A-Za-z])(?=[^A-Za-z])"), " ");
 		return capitalize(s);
+	}
+
+	public static String toCsv(final Collection<String> strings) {
+		if ((strings == null) || strings.isEmpty()) {
+			return "";
+		}
+		StringBuffer sb = new StringBuffer();
+		for (String s : strings) {
+			sb.append(s).append(",");
+		}
+		return sb.substring(0, sb.length() - 1);
 	}
 
 	public static Comparator<Object> toStringComparator() {
