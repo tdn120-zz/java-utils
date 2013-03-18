@@ -7,7 +7,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -19,6 +22,7 @@ public abstract class SearchAndReplaceGenerator extends AbstractGenerator {
 	protected final Class<?>	clazz;
 	protected final String		packageName;
 	private List<String>		code;
+	private final List<Field>	declaredFields;
 	private final String		fileName;
 
 	public SearchAndReplaceGenerator(final String className, final String packageName) throws ClassNotFoundException {
@@ -35,12 +39,22 @@ public abstract class SearchAndReplaceGenerator extends AbstractGenerator {
 		} else {
 			fileName = getSourcePath() + packageName.replaceAll("\\.", "/") + "/" + destClassName + ".java";
 		}
+		declaredFields = new LinkedList<Field>();
+		for (Field field : clazz.getDeclaredFields()) {
+			if (!(Modifier.isTransient(field.getModifiers()) || Modifier.isStatic(field.getModifiers()))) {
+				declaredFields.add(field);
+			}
+		}
 	}
 
 	public void generate() throws IOException {
 		getOriginalCode();
 		generateStuff();
 		writeNewCode();
+	}
+
+	public final List<Field> getDeclaredFields() {
+		return declaredFields;
 	}
 
 	protected void addAutoGenerateComment(final int index) {
