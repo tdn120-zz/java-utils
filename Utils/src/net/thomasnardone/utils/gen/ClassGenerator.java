@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import net.thomasnardone.annotations.UIField;
 import net.thomasnardone.utils.StringUtil;
 import net.thomasnardone.utils.comparator.ClassNameComparator;
 
@@ -69,6 +70,10 @@ public abstract class ClassGenerator extends AbstractGenerator {
 		declaredFields = new LinkedList<Field>();
 		for (Field field : clazz.getDeclaredFields()) {
 			if (!(Modifier.isTransient(field.getModifiers()) || Modifier.isStatic(field.getModifiers()))) {
+				final UIField annotation = field.getAnnotation(UIField.class);
+				if ((annotation != null) && annotation.dontGenerate()) {
+					continue;
+				}
 				declaredFields.add(field);
 			}
 		}
@@ -87,7 +92,8 @@ public abstract class ClassGenerator extends AbstractGenerator {
 	}
 
 	protected final void addImport(final Class<?> importClass) {
-		if (!packageName.equals(importClass.getPackage().getName())) {
+		final String importPackage = importClass.getPackage().getName();
+		if (!packageName.equals(importPackage) && !"java.lang".equals(importPackage)) {
 			imports.add(importClass);
 		}
 	}
