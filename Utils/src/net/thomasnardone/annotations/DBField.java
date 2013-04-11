@@ -13,4 +13,6 @@ public @interface DBField {
 	String table() default "";
 
 	String value() default "";
+
+	boolean writeEnabled() default true;
 }
