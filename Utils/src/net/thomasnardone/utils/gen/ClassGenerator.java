@@ -3,18 +3,16 @@ package net.thomasnardone.utils.gen;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.thomasnardone.annotations.UIField;
 import net.thomasnardone.utils.StringUtil;
 import net.thomasnardone.utils.comparator.ClassNameComparator;
 
-public abstract class ClassGenerator extends AbstractGenerator {
+public abstract class ClassGenerator extends AbstractClassGenerator {
 	protected static Params getParams(final Class<?> baseClass) {
 		String className = new ClassSelectionDialog(baseClass).select();
 		if (className == null) {
@@ -28,11 +26,9 @@ public abstract class ClassGenerator extends AbstractGenerator {
 	}
 
 	protected final String				className;
-	protected final Class<?>			clazz;
 	protected final String				packageName;
 	protected final String				paramName;
 	protected final String				propName;
-	private final List<Field>			declaredFields;
 	private final List<String>			fields;
 	private final boolean				importClass;
 	private final Set<Class<?>>			imports;
@@ -56,9 +52,9 @@ public abstract class ClassGenerator extends AbstractGenerator {
 
 	public ClassGenerator(final String fullClassName, final String packageName, final boolean importClass)
 			throws ClassNotFoundException {
+		super(Class.forName(fullClassName));
 		this.packageName = packageName;
 		this.importClass = importClass;
-		clazz = Class.forName(fullClassName);
 		className = clazz.getSimpleName();
 		paramName = StringUtil.deCapitalize(className);
 		propName = StringUtil.underscore(className);
@@ -67,16 +63,6 @@ public abstract class ClassGenerator extends AbstractGenerator {
 		interfaces = new TreeSet<String>(StringUtil.comparator());
 		methods = new LinkedList<List<String>>();
 		innerClasses = new LinkedList<List<String>>();
-		declaredFields = new LinkedList<Field>();
-		for (Field field : clazz.getDeclaredFields()) {
-			if (!(Modifier.isTransient(field.getModifiers()) || Modifier.isStatic(field.getModifiers()))) {
-				final UIField annotation = field.getAnnotation(UIField.class);
-				if ((annotation != null) && annotation.dontGenerate()) {
-					continue;
-				}
-				declaredFields.add(field);
-			}
-		}
 	}
 
 	public final void generate() throws Exception {
@@ -122,10 +108,6 @@ public abstract class ClassGenerator extends AbstractGenerator {
 
 	protected String getConstructorName() {
 		return className + getName();
-	}
-
-	protected List<Field> getDeclaredFields() {
-		return declaredFields;
 	}
 
 	protected abstract String getName();

@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UIField {
-	boolean dontGenerate() default false;
+	boolean column() default true;
 
 	String label() default "";
 
