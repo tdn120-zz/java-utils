@@ -4,10 +4,12 @@ import java.util.Collection;
 import java.util.Comparator;
 
 import net.thomasnardone.utils.comparator.string.AscendingIgnoreCase;
+import net.thomasnardone.utils.comparator.string.NumberAscending;
 import net.thomasnardone.utils.comparator.string.ToStringComparator;
 
 public class StringUtil {
 	public static final int	COMPARE_ASCENDING_IGNORE_CASE	= 1;
+	public static final int	COMPARE_NUMBER_ASCENDING		= 2;
 
 	public static String capitalize(final String s) {
 		return s.replaceFirst(String.valueOf(s.charAt(0)), String.valueOf(Character.toUpperCase(s.charAt(0))));
@@ -21,6 +23,8 @@ public class StringUtil {
 		switch (type) {
 			case COMPARE_ASCENDING_IGNORE_CASE:
 				return new AscendingIgnoreCase();
+			case COMPARE_NUMBER_ASCENDING:
+				return new NumberAscending();
 			default:
 				return new AscendingIgnoreCase();
 		}
