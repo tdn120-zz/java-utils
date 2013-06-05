@@ -2,6 +2,7 @@ package net.thomasnardone.ui.table;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -11,9 +12,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Properties;
 import java.util.prefs.Preferences;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -23,10 +24,16 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.DocumentEvent;
 import javax.swing.filechooser.FileFilter;
+
+import net.thomasnardone.ui.swing.DocumentAdapter;
+import net.thomasnardone.ui.swing.UndoTextArea;
+import net.thomasnardone.ui.util.SortedProperties;
 
 public class TableEditor extends JFrame implements ActionListener {
 	private static final String			COLUMNS				= "columns";
@@ -34,6 +41,7 @@ public class TableEditor extends JFrame implements ActionListener {
 	private static final String			NEW					= "new";
 	private static final String			OPEN				= "open";
 	private static final Preferences	prefs				= Preferences.userNodeForPackage(TableEditor.class);
+	private static final String			QUERY				= "query";
 	private static final String			SAVE				= "save";
 	private static final String			SAVE_AS				= "save_as";
 	private static final long			serialVersionUID	= 1L;
@@ -54,11 +62,12 @@ public class TableEditor extends JFrame implements ActionListener {
 		});
 	}
 
-	private final JPanel		columnPanel;
-	private boolean				dirty;
-	private final JPanel		mainPanel;
-	private File				propFile;
-	private final Properties	props;
+	private final JPanel			columnPanel;
+	private boolean					dirty;
+	private final JSplitPane		mainPanel;
+	private File					propFile;
+	private final SortedProperties	props;
+	private final UndoTextArea		queryField;
 
 	public TableEditor(final String propFile) throws IOException {
 		super(TITLE);
@@ -70,12 +79,32 @@ public class TableEditor extends JFrame implements ActionListener {
 			}
 		});
 
-		props = new Properties();
+		props = new SortedProperties();
+
+		JPanel queryPanel = new JPanel(new BorderLayout());
+		queryPanel.add(new JScrollPane(queryField = new UndoTextArea(1, 60)));
+		queryPanel.setBorder(BorderFactory.createTitledBorder("Query"));
+		queryField.getDocument().addDocumentListener(new DocumentAdapter() {
+			@Override
+			public void insertUpdate(final DocumentEvent e) {
+				setDirty();
+			}
+
+			@Override
+			public void removeUpdate(final DocumentEvent e) {
+				setDirty();
+			}
+		});
 
 		columnPanel = new JPanel();
 		columnPanel.setLayout(new BoxLayout(columnPanel, BoxLayout.PAGE_AXIS));
-		mainPanel = new JPanel(new BorderLayout());
-		mainPanel.add(new JScrollPane(columnPanel), BorderLayout.CENTER);
+		final JScrollPane columnScrollPane = new JScrollPane(columnPanel);
+		columnScrollPane.getVerticalScrollBar().setUnitIncrement(5);
+		columnScrollPane.setBorder(BorderFactory.createTitledBorder("Columns"));
+
+		mainPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT, false, queryPanel, columnScrollPane);
+		mainPanel.setDividerLocation(200);
+
 		setContentPane(mainPanel);
 
 		JMenuBar mb = new JMenuBar();
@@ -89,13 +118,11 @@ public class TableEditor extends JFrame implements ActionListener {
 		mb.add(fileMenu);
 		setJMenuBar(mb);
 
-		final TableColumnEditor sizingPanel = new TableColumnEditor(this);
-		columnPanel.add(sizingPanel);
 		pack();
-		columnPanel.remove(sizingPanel);
-		setSize(new Dimension(getSize().width, 480));
+		setSize(new Dimension(getSize().width, 600));
 
 		setLocationRelativeTo(null);
+		startNewFile();
 	}
 
 	@Override
@@ -110,7 +137,9 @@ public class TableEditor extends JFrame implements ActionListener {
 		} else if (SAVE_AS.equals(action)) {
 			saveAs();
 		} else if (EXIT.equals(action)) {
-			dispose();
+			exit();
+		} else if (TableColumnEditor.EDIT_ACTION.equals(action)) {
+			setDirty();
 		} else if (TableColumnEditor.ADD_ACTION.equals(action)) {
 			addColumn((TableColumnEditor) e.getSource());
 		} else if (TableColumnEditor.REMOVE_ACTION.equals(action)) {
@@ -120,7 +149,6 @@ public class TableEditor extends JFrame implements ActionListener {
 		} else if (TableColumnEditor.DOWN_ACTION.equals(action)) {
 			moveDown((TableColumnEditor) e.getSource());
 		}
-
 	}
 
 	private void addColumn(final TableColumnEditor source) {
@@ -135,20 +163,10 @@ public class TableEditor extends JFrame implements ActionListener {
 	}
 
 	private void exit() {
-		if (dirty) {
-			final int response = JOptionPane.showConfirmDialog(this, "Would you like to save your changes?", "Exit",
-					JOptionPane.YES_NO_CANCEL_OPTION);
-			switch (response) {
-				case JOptionPane.YES_OPTION:
-					save();
-					break;
-				case JOptionPane.NO_OPTION:
-					break;
-				case JOptionPane.CANCEL_OPTION:
-					return;
-			}
+		int response = saveCheck();
+		if (response != JOptionPane.CANCEL_OPTION) {
+			dispose();
 		}
-		dispose();
 	}
 
 	private JMenuItem menuItem(final String text, final String action, final int mnemonic, final int ctrlKey) {
@@ -159,9 +177,10 @@ public class TableEditor extends JFrame implements ActionListener {
 		JMenuItem item = new JMenuItem(text, mnemonic);
 		item.setActionCommand(action);
 		if (shift) {
-			item.setAccelerator(KeyStroke.getKeyStroke(ctrlKey, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK));
+			item.setAccelerator(KeyStroke.getKeyStroke(ctrlKey, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()
+					| KeyEvent.SHIFT_DOWN_MASK));
 		} else {
-			item.setAccelerator(KeyStroke.getKeyStroke(ctrlKey, KeyEvent.CTRL_DOWN_MASK));
+			item.setAccelerator(KeyStroke.getKeyStroke(ctrlKey, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		}
 		item.addActionListener(this);
 		return item;
@@ -218,6 +237,11 @@ public class TableEditor extends JFrame implements ActionListener {
 	}
 
 	private void open() {
+		int response = saveCheck();
+		if (JOptionPane.CANCEL_OPTION == response) {
+			return;
+		}
+
 		propFile = selectPropFile("Open", "Open");
 		if (propFile == null) {
 			return;
@@ -226,19 +250,21 @@ public class TableEditor extends JFrame implements ActionListener {
 		try {
 			props.load(new FileInputStream(propFile));
 			String[] columns = props.getProperty(COLUMNS).split(" ");
+			columnPanel.removeAll();
 			for (String column : columns) {
 				if (column.trim().length() < 1) {
 					continue;
 				}
 				columnPanel.add(new TableColumnEditor(column, props, this));
 			}
+			queryField.setText(props.getProperty(QUERY));
 		} catch (IOException e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(this, "Exception occurred: " + e.toString(), "Error loading properties",
 					JOptionPane.ERROR_MESSAGE);
 			columnPanel.removeAll();
 		}
-		columnPanel.validate();
+		columnPanel.revalidate();
 		reset();
 	}
 
@@ -273,6 +299,8 @@ public class TableEditor extends JFrame implements ActionListener {
 				column.saveColumnProperties(props);
 			}
 			props.setProperty(COLUMNS, columns.toString());
+			// TODO newlines
+			props.setProperty(QUERY, queryField.getText());
 			try {
 				final FileOutputStream output = new FileOutputStream(propFile);
 				props.store(output, "Created by " + getClass().getName());
@@ -304,6 +332,18 @@ public class TableEditor extends JFrame implements ActionListener {
 		if (propFile != null) {
 			save();
 		}
+	}
+
+	private int saveCheck() {
+		if (dirty) {
+			final int response = JOptionPane.showConfirmDialog(this, "Would you like to save your changes?", "Exit",
+					JOptionPane.YES_NO_CANCEL_OPTION);
+			if (JOptionPane.YES_OPTION == response) {
+				save();
+			}
+			return response;
+		}
+		return JOptionPane.YES_OPTION;
 	}
 
 	private File selectPropFile(final String title, final String actionText) {
@@ -342,6 +382,5 @@ public class TableEditor extends JFrame implements ActionListener {
 		columnPanel.add(new TableColumnEditor(this));
 		columnPanel.validate();
 		reset();
-		setDirty();
 	}
 }

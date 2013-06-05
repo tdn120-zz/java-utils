@@ -18,12 +18,16 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
+import javax.swing.event.DocumentEvent;
+import javax.swing.text.JTextComponent;
 
+import net.thomasnardone.ui.swing.DocumentAdapter;
 import net.thomasnardone.ui.swing.MyComboBox;
 
 public class TableColumnEditor extends JToolBar implements ActionListener {
 	public static final String			ADD_ACTION			= "column.add";
 	public static final String			DOWN_ACTION			= "column.down";
+	public static final String			EDIT_ACTION			= "column.edit";
 	public static final String			REMOVE_ACTION		= "column.remove";
 	public static final String			UP_ACTION			= "column.up";
 	private static final String			DATA_TYPE			= "dataType";
@@ -80,6 +84,8 @@ public class TableColumnEditor extends JToolBar implements ActionListener {
 		setupAction(removeButton, REMOVE_ACTION);
 		setupAction(upButton, UP_ACTION);
 		setupAction(downButton, DOWN_ACTION);
+		setupEditAction(nameField);
+		setupEditAction(displayNameField);
 		addActionListener(listener);
 	}
 
@@ -170,5 +176,20 @@ public class TableColumnEditor extends JToolBar implements ActionListener {
 	private void setupAction(final AbstractButton button, final String action) {
 		button.setActionCommand(action);
 		button.addActionListener(this);
+	}
+
+	private void setupEditAction(final JTextComponent field) {
+		field.getDocument().addDocumentListener(new DocumentAdapter() {
+			@Override
+			public void insertUpdate(final DocumentEvent e) {
+				actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, EDIT_ACTION));
+			}
+
+			@Override
+			public void removeUpdate(final DocumentEvent e) {
+				actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, EDIT_ACTION));
+			}
+
+		});
 	}
 }
