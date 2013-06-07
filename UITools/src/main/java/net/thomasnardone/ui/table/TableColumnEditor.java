@@ -4,6 +4,8 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Properties;
@@ -15,12 +17,15 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
 
+import net.thomasnardone.ui.DataType;
+import net.thomasnardone.ui.EditType;
 import net.thomasnardone.ui.swing.DocumentAdapter;
 import net.thomasnardone.ui.swing.MyComboBox;
 
@@ -31,11 +36,8 @@ public class TableColumnEditor extends JToolBar implements ActionListener {
 	public static final String			REMOVE_ACTION		= "column.remove";
 	public static final String			UP_ACTION			= "column.up";
 	private static final String			DATA_TYPE			= "dataType";
-	private static final String[]		DATA_TYPES			= new String[] { "String", "Integer", "Double", "Date" };
 	private static final String			DISPLAY_NAME		= "displayName";
 	private static final String			EDIT_TYPE			= "editType";
-	private static final String[]		EDIT_TYPES			= new String[] { "Read Only", "Text", "Combo", "Date" };
-
 	private static final String			PREFIX				= "column.";
 	private static final long			serialVersionUID	= 1L;
 	private static final int			STRUT				= 5;
@@ -43,10 +45,10 @@ public class TableColumnEditor extends JToolBar implements ActionListener {
 
 	private final JButton				addButton;
 	private final String				column;
-	private final MyComboBox<String>	dataTypeCombo;
+	private final MyComboBox<DataType>	dataTypeCombo;
 	private final JTextField			displayNameField;
 	private final JButton				downButton;
-	private final MyComboBox<String>	editTypeCombo;
+	private final MyComboBox<EditType>	editTypeCombo;
 	private final JTextField			nameField;
 	private final JButton				removeButton;
 	private final JButton				upButton;
@@ -68,9 +70,9 @@ public class TableColumnEditor extends JToolBar implements ActionListener {
 		add(Box.createHorizontalStrut(STRUT));
 		add(borderPanel(displayNameField = new JTextField(10), "Display Name"));
 		add(Box.createHorizontalStrut(STRUT));
-		add(borderPanel(dataTypeCombo = new MyComboBox<>(DATA_TYPES), "Data Type"));
+		add(borderPanel(dataTypeCombo = new MyComboBox<>(DataType.values()), "Data Type"));
 		add(Box.createHorizontalStrut(STRUT));
-		add(borderPanel(editTypeCombo = new MyComboBox<>(EDIT_TYPES), "Edit Type"));
+		add(borderPanel(editTypeCombo = new MyComboBox<>(EditType.values()), "Edit Type"));
 		add(Box.createHorizontalStrut(STRUT));
 		add(addButton = button("add.png"));
 		add(Box.createHorizontalStrut(STRUT));
@@ -86,6 +88,8 @@ public class TableColumnEditor extends JToolBar implements ActionListener {
 		setupAction(downButton, DOWN_ACTION);
 		setupEditAction(nameField);
 		setupEditAction(displayNameField);
+		setupSelectAction(dataTypeCombo);
+		setupSelectAction(editTypeCombo);
 		addActionListener(listener);
 	}
 
@@ -119,8 +123,8 @@ public class TableColumnEditor extends JToolBar implements ActionListener {
 		} else {
 			nameField.setText(column);
 			displayNameField.setText(props.getProperty(PREFIX + column + "." + DISPLAY_NAME));
-			dataTypeCombo.setSelectedItem(props.getProperty(PREFIX + column + "." + DATA_TYPE));
-			editTypeCombo.setSelectedItem(props.getProperty(PREFIX + column + "." + EDIT_TYPE));
+			dataTypeCombo.setSelectedItem(DataType.valueOf(props.getProperty(PREFIX + column + "." + DATA_TYPE)));
+			editTypeCombo.setSelectedItem(EditType.valueOf(props.getProperty(PREFIX + column + "." + EDIT_TYPE)));
 		}
 	}
 
@@ -135,10 +139,10 @@ public class TableColumnEditor extends JToolBar implements ActionListener {
 		String newColumn = nameField.getText();
 		props.setProperty(PREFIX + newColumn + "." + DISPLAY_NAME, getDisplayName());
 		if (dataTypeCombo.getSelectedIndex() > -1) {
-			props.setProperty(PREFIX + newColumn + "." + DATA_TYPE, dataTypeCombo.getSelectedItem());
+			props.setProperty(PREFIX + newColumn + "." + DATA_TYPE, dataTypeCombo.getSelectedItem().toString());
 		}
 		if (editTypeCombo.getSelectedIndex() > -1) {
-			props.setProperty(PREFIX + newColumn + "." + EDIT_TYPE, editTypeCombo.getSelectedItem());
+			props.setProperty(PREFIX + newColumn + "." + EDIT_TYPE, editTypeCombo.getSelectedItem().toString());
 		}
 	}
 
@@ -190,6 +194,17 @@ public class TableColumnEditor extends JToolBar implements ActionListener {
 				actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, EDIT_ACTION));
 			}
 
+		});
+	}
+
+	private void setupSelectAction(final JComboBox<?> combo) {
+		combo.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(final ItemEvent e) {
+				if (e.getStateChange() == ItemEvent.SELECTED) {
+					actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, EDIT_ACTION));
+				}
+			}
 		});
 	}
 }

@@ -299,7 +299,6 @@ public class TableEditor extends JFrame implements ActionListener {
 				column.saveColumnProperties(props);
 			}
 			props.setProperty(COLUMNS, columns.toString());
-			// TODO newlines
 			props.setProperty(QUERY, queryField.getText());
 			try {
 				final FileOutputStream output = new FileOutputStream(propFile);
