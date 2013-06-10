@@ -25,6 +25,13 @@ public final class SortedComboModel<T extends Comparable<T>> extends AbstractLis
 		}
 	}
 
+	public SortedComboModel(final T[] items) {
+		this();
+		for (T item : items) {
+			addItem(item);
+		}
+	}
+
 	public void addItem(final T item) {
 		int pos = Collections.binarySearch(items, item);
 		if (pos < 0) {
