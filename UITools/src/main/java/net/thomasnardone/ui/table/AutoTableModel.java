@@ -33,8 +33,18 @@ public class AutoTableModel extends AbstractTableModel {
 	}
 
 	@Override
+	public Class<?> getColumnClass(final int columnIndex) {
+		return columns[columnIndex].getDataType().getJavaClass();
+	}
+
+	@Override
 	public int getColumnCount() {
 		return columns.length;
+	}
+
+	@Override
+	public String getColumnName(final int column) {
+		return columns[column].getDisplayName();
 	}
 
 	@Override

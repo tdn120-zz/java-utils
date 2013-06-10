@@ -12,6 +12,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import javax.swing.BorderFactory;
@@ -140,18 +142,30 @@ public class TableEditor extends JFrame implements ActionListener {
 			exit();
 		} else if (TableColumnEditor.EDIT_ACTION.equals(action)) {
 			setDirty();
+		} else if (TableColumnEditor.EDIT_NAME_ACTION.equals(action)) {
+			setDirty();
+			DocumentEvent de = (DocumentEvent)e.getSource();
+			de.get
 		} else if (TableColumnEditor.ADD_ACTION.equals(action)) {
-			addColumn((TableColumnEditor) e.getSource());
+			addColumn((MyToolBar) e.getSource());
 		} else if (TableColumnEditor.REMOVE_ACTION.equals(action)) {
-			removeColumn((TableColumnEditor) e.getSource());
+			removeColumn((MyToolBar) e.getSource());
 		} else if (TableColumnEditor.UP_ACTION.equals(action)) {
-			moveUp((TableColumnEditor) e.getSource());
+			moveUp((MyToolBar) e.getSource());
 		} else if (TableColumnEditor.DOWN_ACTION.equals(action)) {
-			moveDown((TableColumnEditor) e.getSource());
+			moveDown((MyToolBar) e.getSource());
 		}
 	}
 
-	private void addColumn(final TableColumnEditor source) {
+	public List<String> getColumnNames() {
+		List<String> names = new ArrayList<>();
+		for (int i = 0; i < columnPanel.getComponentCount(); i++) {
+			names.add(((TableColumnEditor) columnPanel.getComponent(i)).getColumnName());
+		}
+		return names;
+	}
+
+	private void addColumn(final MyToolBar source) {
 		for (int i = 0; i < columnPanel.getComponentCount(); i++) {
 			if (source == columnPanel.getComponent(i)) {
 				columnPanel.add(new TableColumnEditor(this), i + 1);
@@ -186,7 +200,7 @@ public class TableEditor extends JFrame implements ActionListener {
 		return item;
 	}
 
-	private void moveDown(final TableColumnEditor source) {
+	private void moveDown(final MyToolBar source) {
 		for (int i = 0; i < columnPanel.getComponentCount(); i++) {
 			if (source == columnPanel.getComponent(i)) {
 				if (i < (columnPanel.getComponentCount() - 1)) {
@@ -200,7 +214,7 @@ public class TableEditor extends JFrame implements ActionListener {
 		}
 	}
 
-	private void moveUp(final TableColumnEditor source) {
+	private void moveUp(final MyToolBar source) {
 		for (int i = 0; i < columnPanel.getComponentCount(); i++) {
 			if (source == columnPanel.getComponent(i)) {
 				if (i > 0) {
@@ -261,14 +275,14 @@ public class TableEditor extends JFrame implements ActionListener {
 		} catch (IOException e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(this, "Exception occurred: " + e.toString(), "Error loading properties",
-					JOptionPane.ERROR_MESSAGE);
+				JOptionPane.ERROR_MESSAGE);
 			columnPanel.removeAll();
 		}
 		columnPanel.revalidate();
 		reset();
 	}
 
-	private void removeColumn(final TableColumnEditor source) {
+	private void removeColumn(final MyToolBar source) {
 		columnPanel.remove(source);
 		columnPanel.validate();
 		columnPanel.repaint();
@@ -308,7 +322,7 @@ public class TableEditor extends JFrame implements ActionListener {
 			} catch (IOException e) {
 				e.printStackTrace();
 				JOptionPane.showMessageDialog(this, "Unable to Save", "Exception occurred: " + e.toString(),
-						JOptionPane.ERROR_MESSAGE);
+					JOptionPane.ERROR_MESSAGE);
 			}
 			reset();
 		}
@@ -336,7 +350,7 @@ public class TableEditor extends JFrame implements ActionListener {
 	private int saveCheck() {
 		if (dirty) {
 			final int response = JOptionPane.showConfirmDialog(this, "Would you like to save your changes?", "Exit",
-					JOptionPane.YES_NO_CANCEL_OPTION);
+				JOptionPane.YES_NO_CANCEL_OPTION);
 			if (JOptionPane.YES_OPTION == response) {
 				save();
 			}
