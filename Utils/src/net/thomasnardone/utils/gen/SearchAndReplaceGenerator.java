@@ -88,6 +88,7 @@ public abstract class SearchAndReplaceGenerator extends AbstractClassGenerator {
 			code.add(line);
 			line = reader.readLine();
 		}
+		reader.close();
 	}
 
 	private void indentMethod(final List<String> method) throws IOException {

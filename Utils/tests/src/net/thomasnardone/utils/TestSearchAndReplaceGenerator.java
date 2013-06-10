@@ -27,6 +27,7 @@ public class TestSearchAndReplaceGenerator {
 		}
 		writer.flush();
 		writer.close();
+		reader.close();
 	}
 
 	@Test(timeout = 2000)
