@@ -14,10 +14,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.prefs.Preferences;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -26,7 +28,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -35,10 +36,14 @@ import javax.swing.filechooser.FileFilter;
 
 import net.thomasnardone.ui.swing.DocumentAdapter;
 import net.thomasnardone.ui.swing.UndoTextArea;
+import net.thomasnardone.ui.table.TableColumnEditor.ColumnNameChangeListener;
 import net.thomasnardone.ui.util.SortedProperties;
 
-public class TableEditor extends JFrame implements ActionListener {
+public class TableEditor extends JFrame implements ActionListener, ColumnNameChangeListener {
+
+	public static final String			FILTERS				= "filters";
 	private static final String			COLUMNS				= "columns";
+
 	private static final String			EXIT				= "exit";
 	private static final String			NEW					= "new";
 	private static final String			OPEN				= "open";
@@ -66,7 +71,8 @@ public class TableEditor extends JFrame implements ActionListener {
 
 	private final JPanel			columnPanel;
 	private boolean					dirty;
-	private final JSplitPane		mainPanel;
+	private final JPanel			filterPanel;
+	private final JComponent		mainPanel;
 	private File					propFile;
 	private final SortedProperties	props;
 	private final UndoTextArea		queryField;
@@ -84,7 +90,7 @@ public class TableEditor extends JFrame implements ActionListener {
 		props = new SortedProperties();
 
 		JPanel queryPanel = new JPanel(new BorderLayout());
-		queryPanel.add(new JScrollPane(queryField = new UndoTextArea(1, 60)));
+		queryPanel.add(new JScrollPane(queryField = new UndoTextArea(10, 60)));
 		queryPanel.setBorder(BorderFactory.createTitledBorder("Query"));
 		queryField.getDocument().addDocumentListener(new DocumentAdapter() {
 			@Override
@@ -104,8 +110,14 @@ public class TableEditor extends JFrame implements ActionListener {
 		columnScrollPane.getVerticalScrollBar().setUnitIncrement(5);
 		columnScrollPane.setBorder(BorderFactory.createTitledBorder("Columns"));
 
-		mainPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT, false, queryPanel, columnScrollPane);
-		mainPanel.setDividerLocation(200);
+		filterPanel = new JPanel();
+		filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.PAGE_AXIS));
+		filterPanel.setBorder(BorderFactory.createTitledBorder("Filters"));
+
+		mainPanel = new JPanel(new BorderLayout());
+		mainPanel.add(queryPanel, BorderLayout.NORTH);
+		mainPanel.add(new JScrollPane(columnPanel), BorderLayout.CENTER);
+		mainPanel.add(filterPanel, BorderLayout.SOUTH);
 
 		setContentPane(mainPanel);
 
@@ -142,18 +154,40 @@ public class TableEditor extends JFrame implements ActionListener {
 			exit();
 		} else if (TableColumnEditor.EDIT_ACTION.equals(action)) {
 			setDirty();
-		} else if (TableColumnEditor.EDIT_NAME_ACTION.equals(action)) {
-			setDirty();
-			DocumentEvent de = (DocumentEvent)e.getSource();
-			de.get
 		} else if (TableColumnEditor.ADD_ACTION.equals(action)) {
-			addColumn((MyToolBar) e.getSource());
+			addColumn((MyPanel) e.getSource());
 		} else if (TableColumnEditor.REMOVE_ACTION.equals(action)) {
-			removeColumn((MyToolBar) e.getSource());
+			removeColumn((TableColumnEditor) e.getSource());
 		} else if (TableColumnEditor.UP_ACTION.equals(action)) {
-			moveUp((MyToolBar) e.getSource());
+			moveUp((MyPanel) e.getSource());
 		} else if (TableColumnEditor.DOWN_ACTION.equals(action)) {
-			moveDown((MyToolBar) e.getSource());
+			moveDown((MyPanel) e.getSource());
+		} else if (TableColumnEditor.FILTER_ACTION.equals(action)) {
+			TableColumnEditor editor = (TableColumnEditor) e.getSource();
+			if (editor.isFilterOn()) {
+				addFilter(editor.getColumnName());
+			} else {
+				removeFilter(editor.getColumnName());
+			}
+		} else if (TableFilterEditor.LEFT_ACTION.equals(action)) {
+			moveFilter(action, (TableFilterEditor) e.getSource());
+		} else if (TableFilterEditor.RIGHT_ACTION.equals(action)) {
+			moveFilter(action, (TableFilterEditor) e.getSource());
+		} else if (TableFilterEditor.UP_ACTION.equals(action)) {
+			moveFilter(action, (TableFilterEditor) e.getSource());
+		} else if (TableFilterEditor.DOWN_ACTION.equals(action)) {
+			moveFilter(action, (TableFilterEditor) e.getSource());
+		}
+	}
+
+	@Override
+	public void columnNameChanged(final String oldName, final String newName) {
+		for (int i = 0; i < filterPanel.getComponentCount(); i++) {
+			JComponent filterRow = (JComponent) filterPanel.getComponent(i);
+			for (int j = 0; j < filterRow.getComponentCount(); j++) {
+				TableFilterEditor filterEditor = (TableFilterEditor) filterRow.getComponent(j);
+				filterEditor.columnChanged(oldName, newName);
+			}
 		}
 	}
 
@@ -165,15 +199,36 @@ public class TableEditor extends JFrame implements ActionListener {
 		return names;
 	}
 
-	private void addColumn(final MyToolBar source) {
+	private void addColumn(final MyPanel source) {
 		for (int i = 0; i < columnPanel.getComponentCount(); i++) {
 			if (source == columnPanel.getComponent(i)) {
-				columnPanel.add(new TableColumnEditor(this), i + 1);
+				columnPanel.add(newColumn(null, null), i + 1);
 				columnPanel.validate();
 				setDirty();
 				return;
 			}
 		}
+	}
+
+	private void addFilter(final String column) {
+		JComponent filterRow = null;
+		if (filterPanel.getComponentCount() == 0) {
+			filterRow = newFilterRow();
+		} else {
+			int index = filterPanel.getComponentCount() - 1;
+			filterRow = (JComponent) filterPanel.getComponent(index);
+		}
+		final TableFilterEditor newFilter = new TableFilterEditor(column);
+		newFilter.addActionListener(this);
+		filterRow.add(newFilter);
+		newFilter.revalidate();
+	}
+
+	private void clearPanels() {
+		columnPanel.removeAll();
+		filterPanel.removeAll();
+		mmmblargh();
+		// TODO drag and drop
 	}
 
 	private void exit() {
@@ -200,7 +255,7 @@ public class TableEditor extends JFrame implements ActionListener {
 		return item;
 	}
 
-	private void moveDown(final MyToolBar source) {
+	private void moveDown(final MyPanel source) {
 		for (int i = 0; i < columnPanel.getComponentCount(); i++) {
 			if (source == columnPanel.getComponent(i)) {
 				if (i < (columnPanel.getComponentCount() - 1)) {
@@ -214,7 +269,53 @@ public class TableEditor extends JFrame implements ActionListener {
 		}
 	}
 
-	private void moveUp(final MyToolBar source) {
+	private void moveFilter(final String action, final TableFilterEditor filter) {
+		for (int i = 0; i < filterPanel.getComponentCount(); i++) {
+			final JComponent filterRow = (JComponent) filterPanel.getComponent(i);
+			for (int j = 0; j < filterRow.getComponentCount(); j++) {
+				if (filter == filterRow.getComponent(j)) {
+					switch (action) {
+						case TableFilterEditor.LEFT_ACTION:
+							if (j > 0) {
+								filterRow.remove(j);
+								filterRow.add(filter, j - 1);
+							}
+							break;
+						case TableFilterEditor.RIGHT_ACTION:
+							if (j < (filterRow.getComponentCount() - 1)) {
+								filterRow.remove(j);
+								filterRow.add(filter, j + 1);
+							}
+							break;
+						case TableFilterEditor.UP_ACTION:
+							if (i > 0) {
+								filterRow.remove(j);
+								((JComponent) filterPanel.getComponent(i - 1)).add(filter);
+							}
+							break;
+						case TableFilterEditor.DOWN_ACTION:
+							filterRow.remove(j);
+							if (i < (filterPanel.getComponentCount() - 1)) {
+								((JComponent) filterPanel.getComponent(i + 1)).add(filter);
+							} else {
+								JComponent newFilterRow = newFilterRow();
+								newFilterRow.add(filter);
+							}
+							break;
+					}
+					if (filterRow.getComponentCount() == 0) {
+						filterPanel.remove(filterRow);
+					} else {
+						filterRow.revalidate();
+					}
+					filterPanel.revalidate();
+					return;
+				}
+			}
+		}
+	}
+
+	private void moveUp(final MyPanel source) {
 		for (int i = 0; i < columnPanel.getComponentCount(); i++) {
 			if (source == columnPanel.getComponent(i)) {
 				if (i > 0) {
@@ -226,6 +327,13 @@ public class TableEditor extends JFrame implements ActionListener {
 				return;
 			}
 		}
+	}
+
+	private TableColumnEditor newColumn(final String column, final Properties props) {
+		final TableColumnEditor newColumn = new TableColumnEditor(column, props);
+		newColumn.addActionListener(this);
+		newColumn.addColumnNameChangeListener(this);
+		return newColumn;
 	}
 
 	private void newFile() {
@@ -250,6 +358,14 @@ public class TableEditor extends JFrame implements ActionListener {
 		}
 	}
 
+	private JComponent newFilterRow() {
+		JPanel filterRow = new JPanel();
+		filterRow.setLayout(new BoxLayout(filterRow, BoxLayout.LINE_AXIS));
+		filterPanel.add(filterRow);
+		filterPanel.revalidate();
+		return filterRow;
+	}
+
 	private void open() {
 		int response = saveCheck();
 		if (JOptionPane.CANCEL_OPTION == response) {
@@ -264,29 +380,46 @@ public class TableEditor extends JFrame implements ActionListener {
 		try {
 			props.load(new FileInputStream(propFile));
 			String[] columns = props.getProperty(COLUMNS).split(" ");
-			columnPanel.removeAll();
+			clearPanels();
 			for (String column : columns) {
 				if (column.trim().length() < 1) {
 					continue;
 				}
-				columnPanel.add(new TableColumnEditor(column, props, this));
+				columnPanel.add(newColumn(column, props));
 			}
 			queryField.setText(props.getProperty(QUERY));
 		} catch (IOException e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(this, "Exception occurred: " + e.toString(), "Error loading properties",
-				JOptionPane.ERROR_MESSAGE);
-			columnPanel.removeAll();
+					JOptionPane.ERROR_MESSAGE);
+			clearPanels();
 		}
 		columnPanel.revalidate();
 		reset();
 	}
 
-	private void removeColumn(final MyToolBar source) {
+	private void removeColumn(final TableColumnEditor source) {
 		columnPanel.remove(source);
 		columnPanel.validate();
 		columnPanel.repaint();
+		removeFilter(source.getColumnName());
 		setDirty();
+	}
+
+	private void removeFilter(final String column) {
+		for (int i = 0; i < filterPanel.getComponentCount(); i++) {
+			JComponent filterRow = (JComponent) filterPanel.getComponent(i);
+			for (int j = 0; j < filterRow.getComponentCount(); j++) {
+				TableFilterEditor filterEditor = (TableFilterEditor) filterRow.getComponent(j);
+				if (filterEditor.getColumnName().equals(column)) {
+					filterRow.remove(filterEditor);
+					if (filterEditor.getComponentCount() == 0) {
+						filterPanel.remove(filterEditor);
+					}
+					return;
+				}
+			}
+		}
 	}
 
 	private void reset() {
@@ -322,7 +455,7 @@ public class TableEditor extends JFrame implements ActionListener {
 			} catch (IOException e) {
 				e.printStackTrace();
 				JOptionPane.showMessageDialog(this, "Unable to Save", "Exception occurred: " + e.toString(),
-					JOptionPane.ERROR_MESSAGE);
+						JOptionPane.ERROR_MESSAGE);
 			}
 			reset();
 		}
@@ -350,7 +483,7 @@ public class TableEditor extends JFrame implements ActionListener {
 	private int saveCheck() {
 		if (dirty) {
 			final int response = JOptionPane.showConfirmDialog(this, "Would you like to save your changes?", "Exit",
-				JOptionPane.YES_NO_CANCEL_OPTION);
+					JOptionPane.YES_NO_CANCEL_OPTION);
 			if (JOptionPane.YES_OPTION == response) {
 				save();
 			}
@@ -391,8 +524,8 @@ public class TableEditor extends JFrame implements ActionListener {
 
 	private void startNewFile() {
 		propFile = null;
-		columnPanel.removeAll();
-		columnPanel.add(new TableColumnEditor(this));
+		clearPanels();
+		columnPanel.add(newColumn(null, null));
 		columnPanel.validate();
 		reset();
 	}

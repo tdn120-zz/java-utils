@@ -2,51 +2,60 @@ package net.thomasnardone.ui.table;
 
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
+import java.util.LinkedHashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import net.thomasnardone.ui.DataType;
 import net.thomasnardone.ui.EditType;
 import net.thomasnardone.ui.swing.MyComboBox;
 
-public class TableColumnEditor extends MyToolBar implements ActionListener {
-	public static final String			ADD_ACTION			= "column.add";
-	public static final String			DOWN_ACTION			= "column.down";
-	public static final String			EDIT_ACTION			= "column.edit";
-	public static final String			EDIT_NAME_ACTION	= "column.edit.name";
-	public static final String			REMOVE_ACTION		= "column.remove";
-	public static final String			UP_ACTION			= "column.up";
-	private static final String			DATA_TYPE			= "dataType";
-	private static final String			DISPLAY_NAME		= "displayName";
-	private static final String			EDIT_TYPE			= "editType";
-	private static final String			PREFIX				= "column.";
-	private static final long			serialVersionUID	= 1L;
-	private static final int			STRUT				= 5;
+public class TableColumnEditor extends MyPanel implements ActionListener {
+	public static final String					ADD_ACTION			= "column.add";
+	public static final String					DOWN_ACTION			= "column.down";
+	public static final String					EDIT_ACTION			= "column.edit";
+	public static final String					FILTER_ACTION		= "column.toggleFilter";
+	public static final String					REMOVE_ACTION		= "column.remove";
+	public static final String					UP_ACTION			= "column.up";
+	private static final String					DATA_TYPE			= "dataType";
+	private static final String					DISPLAY_NAME		= "displayName";
+	private static final String					EDIT_TYPE			= "editType";
+	private static final String					PREFIX				= "column.";
+	private static final long					serialVersionUID	= 1L;
+	private static final int					STRUT				= 5;
 
-	private final JButton				addButton;
-	private final String				column;
-	private final MyComboBox<DataType>	dataTypeCombo;
-	private final JTextField			displayNameField;
-	private final JButton				downButton;
-	private final MyComboBox<EditType>	editTypeCombo;
-	private final JTextField			nameField;
-	private final JButton				removeButton;
-	private final JButton				upButton;
+	private final JButton						addButton;
+	private final String						column;
+	private final MyComboBox<DataType>			dataTypeCombo;
+	private final JTextField					displayNameField;
+	private final JButton						downButton;
+	private final MyComboBox<EditType>			editTypeCombo;
+	private final JToggleButton					filterButton;
+	private final Set<ColumnNameChangeListener>	nameChangeListeners;
+	private final JTextField					nameField;
+	private final JButton						removeButton;
+	private final JButton						upButton;
 
-	public TableColumnEditor(final ActionListener listener) {
-		this(null, null, listener);
+	public TableColumnEditor() {
+		this(null, null);
 	}
 
-	public TableColumnEditor(final String column, final Properties props, final ActionListener listener) {
-		setFloatable(false);
+	public TableColumnEditor(final String column, final Properties props) {
+		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
+		nameChangeListeners = new LinkedHashSet<>();
 		this.column = column;
 		add(Box.createHorizontalStrut(STRUT));
-		add(upButton = button("up.png"));
+		add(upButton = button("up.png", "Move Up"));
 		add(Box.createHorizontalStrut(STRUT));
-		add(downButton = button("down.png"));
+		add(downButton = button("down.png", "Move Down"));
 		add(Box.createHorizontalStrut(STRUT));
 		add(borderPanel(nameField = new JTextField(10), "Name"));
 		add(Box.createHorizontalStrut(STRUT));
@@ -56,9 +65,11 @@ public class TableColumnEditor extends MyToolBar implements ActionListener {
 		add(Box.createHorizontalStrut(STRUT));
 		add(borderPanel(editTypeCombo = new MyComboBox<>(EditType.values()), "Edit Type"));
 		add(Box.createHorizontalStrut(STRUT));
-		add(addButton = button("add.png"));
+		add(filterButton = toggleButton("filter.png", "Toggle Filter"));
 		add(Box.createHorizontalStrut(STRUT));
-		add(removeButton = button("remove.png"));
+		add(addButton = button("add.png", "Add Column"));
+		add(Box.createHorizontalStrut(STRUT));
+		add(removeButton = button("remove.png", "Remove Column"));
 		add(Box.createHorizontalStrut(STRUT));
 
 		loadColumnProperties(props);
@@ -68,11 +79,16 @@ public class TableColumnEditor extends MyToolBar implements ActionListener {
 		setupAction(removeButton, REMOVE_ACTION);
 		setupAction(upButton, UP_ACTION);
 		setupAction(downButton, DOWN_ACTION);
-		setupEditAction(nameField, EDIT_NAME_ACTION);
+		setupAction(filterButton, FILTER_ACTION);
+		setupEditAction(nameField, EDIT_ACTION);
 		setupEditAction(displayNameField, EDIT_ACTION);
 		setupSelectAction(dataTypeCombo, EDIT_ACTION);
 		setupSelectAction(editTypeCombo, EDIT_ACTION);
-		addActionListener(listener);
+		nameField.getDocument().addDocumentListener(new NameChangeListener());
+	}
+
+	public void addColumnNameChangeListener(final ColumnNameChangeListener cncl) {
+		nameChangeListeners.add(cncl);
 	}
 
 	public String getColumnName() {
@@ -83,6 +99,10 @@ public class TableColumnEditor extends MyToolBar implements ActionListener {
 		return displayNameField.getText().trim();
 	}
 
+	public boolean isFilterOn() {
+		return filterButton.isSelected();
+	}
+
 	public void loadColumnProperties(final Properties props) {
 		if (props == null) {
 			clear();
@@ -91,7 +111,13 @@ public class TableColumnEditor extends MyToolBar implements ActionListener {
 			displayNameField.setText(props.getProperty(PREFIX + column + "." + DISPLAY_NAME));
 			dataTypeCombo.setSelectedItem(DataType.valueOf(props.getProperty(PREFIX + column + "." + DATA_TYPE)));
 			editTypeCombo.setSelectedItem(EditType.valueOf(props.getProperty(PREFIX + column + "." + EDIT_TYPE)));
+			final String filters = props.getProperty(TableEditor.FILTERS, "");
+			filterButton.setSelected(filters.contains(" " + column + " "));
 		}
+	}
+
+	public void removeColumnNameChangeListener(final ColumnNameChangeListener cncl) {
+		nameChangeListeners.remove(cncl);
 	}
 
 	public void saveColumnProperties(final Properties props) {
@@ -115,4 +141,45 @@ public class TableColumnEditor extends MyToolBar implements ActionListener {
 		editTypeCombo.setSelectedIndex(-1);
 	}
 
+	private void fireNameChange(final String oldName, final String newName) {
+		for (ColumnNameChangeListener cncl : nameChangeListeners
+				.toArray(new ColumnNameChangeListener[nameChangeListeners.size()])) {
+			cncl.columnNameChanged(oldName, newName);
+		}
+	}
+
+	public interface ColumnNameChangeListener {
+		void columnNameChanged(String oldName, String newName);
+	}
+
+	private final class NameChangeListener implements DocumentListener {
+		private String	currentName;
+
+		public NameChangeListener() {
+			currentName = nameField.getText();
+		}
+
+		@Override
+		public void changedUpdate(final DocumentEvent e) {
+			updateName();
+		}
+
+		@Override
+		public void insertUpdate(final DocumentEvent e) {
+			updateName();
+		}
+
+		@Override
+		public void removeUpdate(final DocumentEvent e) {
+			updateName();
+		}
+
+		private void updateName() {
+			String oldName = currentName;
+			currentName = nameField.getText();
+			if (!(oldName.equals(currentName))) {
+				fireNameChange(oldName, currentName);
+			}
+		}
+	}
 }
