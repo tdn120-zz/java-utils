@@ -1,6 +1,8 @@
 package net.thomasnardone.ui.table;
 
+import java.awt.Color;
 import java.awt.Insets;
+import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -12,34 +14,36 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JToolBar;
+import javax.swing.JPanel;
+import javax.swing.JToggleButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
 
 import net.thomasnardone.ui.swing.DocumentAdapter;
 
-public class MyToolBar extends JToolBar implements ActionListener {
+public class MyPanel extends JPanel implements ActionListener {
 	private static final long			serialVersionUID	= 1L;
 	private final Set<ActionListener>	actionListeners		= new LinkedHashSet<>();
 
-	public MyToolBar() {
+	public MyPanel() {
 		super();
 	}
 
-	public MyToolBar(final int orientation) {
-		super(orientation);
+	public MyPanel(final boolean isDoubleBuffered) {
+		super(isDoubleBuffered);
 	}
 
-	public MyToolBar(final String name) {
-		super(name);
+	public MyPanel(final LayoutManager layout) {
+		super(layout);
 	}
 
-	public MyToolBar(final String name, final int orientation) {
-		super(name, orientation);
+	public MyPanel(final LayoutManager layout, final boolean isDoubleBuffered) {
+		super(layout, isDoubleBuffered);
 	}
 
 	@Override
@@ -59,17 +63,17 @@ public class MyToolBar extends JToolBar implements ActionListener {
 	}
 
 	protected JComponent borderPanel(final JComponent component, final String title) {
-		JToolBar panel = new JToolBar();
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
+		panel.setBackground(new Color(0, 0, 0, 0));
 		panel.add(component);
 		panel.setBorder(BorderFactory.createTitledBorder(title));
 		return panel;
 	}
 
-	protected JButton button(final String icon) {
+	protected JButton button(final String icon, final String toolTip) {
 		JButton button = new JButton(loadIcon(icon));
-		button.setMargin(new Insets(1, 1, 1, 1));
-		button.setFocusable(false);
-		button.setAlignmentY(0.25f);
+		setupButton(button, toolTip);
 		return button;
 	}
 
@@ -110,6 +114,12 @@ public class MyToolBar extends JToolBar implements ActionListener {
 		});
 	}
 
+	protected JToggleButton toggleButton(final String icon, final String toolTip) {
+		JToggleButton button = new JToggleButton(loadIcon(icon));
+		setupButton(button, toolTip);
+		return button;
+	}
+
 	private ImageIcon loadIcon(final String fileName) {
 		try {
 			return new ImageIcon(ImageIO.read(getClass().getClassLoader().getResourceAsStream(fileName)));
@@ -117,6 +127,13 @@ public class MyToolBar extends JToolBar implements ActionListener {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	private void setupButton(final AbstractButton button, final String toolTip) {
+		button.setMargin(new Insets(1, 1, 1, 1));
+		button.setFocusable(false);
+		button.setAlignmentY(0.25f);
+		button.setToolTipText(toolTip);
 	}
 
 }
