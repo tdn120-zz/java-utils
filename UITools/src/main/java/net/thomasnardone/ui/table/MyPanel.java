@@ -77,6 +77,15 @@ public class MyPanel extends JPanel implements ActionListener {
 		return button;
 	}
 
+	protected ImageIcon loadIcon(final String fileName) {
+		try {
+			return new ImageIcon(ImageIO.read(getClass().getClassLoader().getResourceAsStream(fileName)));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	protected void notifyActionListeners(final ActionEvent e) {
 		for (ActionListener listener : actionListeners) {
 			listener.actionPerformed(e);
@@ -118,15 +127,6 @@ public class MyPanel extends JPanel implements ActionListener {
 		JToggleButton button = new JToggleButton(loadIcon(icon));
 		setupButton(button, toolTip);
 		return button;
-	}
-
-	private ImageIcon loadIcon(final String fileName) {
-		try {
-			return new ImageIcon(ImageIO.read(getClass().getClassLoader().getResourceAsStream(fileName)));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
 	}
 
 	private void setupButton(final AbstractButton button, final String toolTip) {
