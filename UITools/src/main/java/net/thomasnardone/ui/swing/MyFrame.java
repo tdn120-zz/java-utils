@@ -13,6 +13,10 @@ import javax.swing.JFrame;
 public abstract class MyFrame extends JFrame {
 	private static final long	serialVersionUID	= 1L;
 
+	public MyFrame() {
+		this(EXIT_ON_CLOSE);
+	}
+
 	public MyFrame(final GraphicsConfiguration gc, final int defaultCloseOperation) {
 		super(gc);
 		construct(defaultCloseOperation);
@@ -20,6 +24,10 @@ public abstract class MyFrame extends JFrame {
 
 	public MyFrame(final int defaultCloseOperation) throws HeadlessException {
 		construct(defaultCloseOperation);
+	}
+
+	public MyFrame(final String title) {
+		this(title, EXIT_ON_CLOSE);
 	}
 
 	public MyFrame(final String title, final GraphicsConfiguration gc, final int defaultCloseOperation) {
@@ -30,19 +38,6 @@ public abstract class MyFrame extends JFrame {
 	public MyFrame(final String title, final int defaultCloseOperation) throws HeadlessException {
 		super(title);
 		construct(defaultCloseOperation);
-	}
-
-	/**
-	 * Run an instance of the {@link MyFrame}, with the given <tt>title</tt>
-	 */
-	protected void runFrame(final String title) {
-		try {
-			final MyFrame newInstance = getClass().newInstance();
-			newInstance.setTitle(title);
-			newInstance.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 
 	/**
