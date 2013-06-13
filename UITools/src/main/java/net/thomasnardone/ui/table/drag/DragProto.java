@@ -2,15 +2,13 @@ package net.thomasnardone.ui.table.drag;
 
 import java.awt.HeadlessException;
 
-import javax.swing.JPanel;
-
 import net.thomasnardone.ui.swing.MyFrame;
 
 @SuppressWarnings("serial")
 public class DragProto extends MyFrame {
 
 	public static void main(final String[] args) {
-		new DragProto().runFrame("Drag Prototype");
+		new DragProto().setVisible(true);
 	}
 
 	public DragProto() throws HeadlessException {
@@ -19,12 +17,19 @@ public class DragProto extends MyFrame {
 
 	@Override
 	protected void setupFrame() {
-		JPanel mainPanel = new DragParentPanel();
-		mainPanel.add(new DragPanel("One"));
-		mainPanel.add(new DragPanel("Two"));
-		mainPanel.add(new DragPanel("Three"));
+		DragParentPanel mainPanel = new DragParentPanel();
+		addComponent(mainPanel, "One", 0);
+		addComponent(mainPanel, "Two", 0);
+		addComponent(mainPanel, "Three", 1);
+		addComponent(mainPanel, "Four", 1);
+		addComponent(mainPanel, "Five", 1);
 
 		setContentPane(mainPanel);
+	}
+
+	private void addComponent(final DragParentPanel panel, final String text, final int row) {
+		DragPanel dp = new DragPanel(text);
+		panel.addComponent(dp, dp.getDragComponent(), row);
 	}
 
 }
