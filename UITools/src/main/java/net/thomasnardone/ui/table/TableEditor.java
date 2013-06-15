@@ -169,14 +169,6 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 			} else {
 				removeFilter(editor.getColumnName());
 			}
-		} else if (TableFilterEditor.LEFT_ACTION.equals(action)) {
-			moveFilter(action, (TableFilterEditor) e.getSource());
-		} else if (TableFilterEditor.RIGHT_ACTION.equals(action)) {
-			moveFilter(action, (TableFilterEditor) e.getSource());
-		} else if (TableFilterEditor.UP_ACTION.equals(action)) {
-			moveFilter(action, (TableFilterEditor) e.getSource());
-		} else if (TableFilterEditor.DOWN_ACTION.equals(action)) {
-			moveFilter(action, (TableFilterEditor) e.getSource());
 		}
 	}
 
@@ -227,7 +219,6 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 	private void clearPanels() {
 		columnPanel.removeAll();
 		filterPanel.removeAll();
-		mmmblargh();
 		// TODO drag and drop
 	}
 
@@ -274,35 +265,35 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 			final JComponent filterRow = (JComponent) filterPanel.getComponent(i);
 			for (int j = 0; j < filterRow.getComponentCount(); j++) {
 				if (filter == filterRow.getComponent(j)) {
-					switch (action) {
-						case TableFilterEditor.LEFT_ACTION:
-							if (j > 0) {
-								filterRow.remove(j);
-								filterRow.add(filter, j - 1);
-							}
-							break;
-						case TableFilterEditor.RIGHT_ACTION:
-							if (j < (filterRow.getComponentCount() - 1)) {
-								filterRow.remove(j);
-								filterRow.add(filter, j + 1);
-							}
-							break;
-						case TableFilterEditor.UP_ACTION:
-							if (i > 0) {
-								filterRow.remove(j);
-								((JComponent) filterPanel.getComponent(i - 1)).add(filter);
-							}
-							break;
-						case TableFilterEditor.DOWN_ACTION:
-							filterRow.remove(j);
-							if (i < (filterPanel.getComponentCount() - 1)) {
-								((JComponent) filterPanel.getComponent(i + 1)).add(filter);
-							} else {
-								JComponent newFilterRow = newFilterRow();
-								newFilterRow.add(filter);
-							}
-							break;
-					}
+					// switch (action) {
+					// case TableFilterEditor.LEFT_ACTION:
+					// if (j > 0) {
+					// filterRow.remove(j);
+					// filterRow.add(filter, j - 1);
+					// }
+					// break;
+					// case TableFilterEditor.RIGHT_ACTION:
+					// if (j < (filterRow.getComponentCount() - 1)) {
+					// filterRow.remove(j);
+					// filterRow.add(filter, j + 1);
+					// }
+					// break;
+					// case TableFilterEditor.UP_ACTION:
+					// if (i > 0) {
+					// filterRow.remove(j);
+					// ((JComponent) filterPanel.getComponent(i - 1)).add(filter);
+					// }
+					// break;
+					// case TableFilterEditor.DOWN_ACTION:
+					// filterRow.remove(j);
+					// if (i < (filterPanel.getComponentCount() - 1)) {
+					// ((JComponent) filterPanel.getComponent(i + 1)).add(filter);
+					// } else {
+					// JComponent newFilterRow = newFilterRow();
+					// newFilterRow.add(filter);
+					// }
+					// break;
+					// }
 					if (filterRow.getComponentCount() == 0) {
 						filterPanel.remove(filterRow);
 					} else {
