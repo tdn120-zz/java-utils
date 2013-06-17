@@ -1,12 +1,11 @@
 package net.thomasnardone.ui.table;
 
 import java.awt.Color;
-import java.awt.FlowLayout;
+import java.util.Properties;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -17,11 +16,11 @@ import net.thomasnardone.ui.swing.SortedComboModel;
 
 public class TableFilterEditor extends MyPanel {
 	public static final String				EDIT_ACTION			= "filter.edit";
+	public static final String				TYPE				= "type";
 	private static final long				serialVersionUID	= 1L;
 
 	private final JComponent				borderPanel;
 	private String							columnName;
-	private final JLabel					dragLabel;
 	private final MyComboBox<FilterType>	typeCombo;
 
 	public TableFilterEditor(final String columnName) {
@@ -31,8 +30,6 @@ public class TableFilterEditor extends MyPanel {
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.LINE_AXIS));
 		mainPanel.setBackground(new Color(0, 0, 0, 0));
-		mainPanel.add(dragLabel = new JLabel(loadIcon("drag.png")));
-		dragLabel.setDropTarget(null);
 		mainPanel.add(new JLabel("Type:"));
 		mainPanel.add(typeCombo = new MyComboBox<>(new SortedComboModel<>(FilterType.values())));
 		typeCombo.setMaximumSize(typeCombo.getPreferredSize());
@@ -54,11 +51,16 @@ public class TableFilterEditor extends MyPanel {
 		return columnName;
 	}
 
-	private JComponent buttonPanel(final JButton... buttons) {
-		JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-		for (JButton button : buttons) {
-			panel.add(button);
+	public void loadFilterProperties(final Properties props) {
+		final String type = props.getProperty(TableEditor.FILTER + "." + columnName + "." + TYPE);
+		if (type != null) {
+			typeCombo.setSelectedItem(FilterType.valueOf(type));
+		} else {
+			typeCombo.setSelectedIndex(-1);
 		}
-		return panel;
+	}
+
+	public void saveFilterProperties(final Properties props) {
+		props.put(TableEditor.FILTER + "." + columnName + "." + TYPE, typeCombo.getSelectedItem().toString());
 	}
 }

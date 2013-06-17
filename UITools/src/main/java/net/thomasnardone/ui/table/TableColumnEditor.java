@@ -111,8 +111,8 @@ public class TableColumnEditor extends MyPanel implements ActionListener {
 			displayNameField.setText(props.getProperty(PREFIX + column + "." + DISPLAY_NAME));
 			dataTypeCombo.setSelectedItem(DataType.valueOf(props.getProperty(PREFIX + column + "." + DATA_TYPE)));
 			editTypeCombo.setSelectedItem(EditType.valueOf(props.getProperty(PREFIX + column + "." + EDIT_TYPE)));
-			final String filters = props.getProperty(TableEditor.FILTERS, "");
-			filterButton.setSelected(filters.contains(" " + column + " "));
+			final String filterType = props.getProperty(TableEditor.FILTER + "." + column + "." + TableFilterEditor.TYPE);
+			filterButton.setSelected(filterType != null);
 		}
 	}
 

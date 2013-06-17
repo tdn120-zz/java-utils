@@ -1,6 +1,7 @@
 package net.thomasnardone.ui.table;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -13,7 +14,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.prefs.Preferences;
 
@@ -37,18 +40,20 @@ import javax.swing.filechooser.FileFilter;
 import net.thomasnardone.ui.swing.DocumentAdapter;
 import net.thomasnardone.ui.swing.UndoTextArea;
 import net.thomasnardone.ui.table.TableColumnEditor.ColumnNameChangeListener;
+import net.thomasnardone.ui.table.drag.DragArrangePanel;
 import net.thomasnardone.ui.util.SortedProperties;
 
 public class TableEditor extends JFrame implements ActionListener, ColumnNameChangeListener {
 
-	public static final String			FILTERS				= "filters";
+	public static final String			FILTER				= "filter";
 	private static final String			COLUMNS				= "columns";
-
 	private static final String			EXIT				= "exit";
+	private static final String			FILTER_ROWS			= FILTER + ".rows";
 	private static final String			NEW					= "new";
 	private static final String			OPEN				= "open";
 	private static final Preferences	prefs				= Preferences.userNodeForPackage(TableEditor.class);
 	private static final String			QUERY				= "query";
+	private static final String			ROW					= "row";
 	private static final String			SAVE				= "save";
 	private static final String			SAVE_AS				= "save_as";
 	private static final long			serialVersionUID	= 1L;
@@ -69,13 +74,14 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 		});
 	}
 
-	private final JPanel			columnPanel;
-	private boolean					dirty;
-	private final JPanel			filterPanel;
-	private final JComponent		mainPanel;
-	private File					propFile;
-	private final SortedProperties	props;
-	private final UndoTextArea		queryField;
+	private final JPanel							columnPanel;
+	private boolean									dirty;
+	private final Map<String, TableFilterEditor>	filterMap;
+	private final DragArrangePanel					filterPanel;
+	private final JComponent						mainPanel;
+	private File									propFile;
+	private final SortedProperties					props;
+	private final UndoTextArea						queryField;
 
 	public TableEditor(final String propFile) throws IOException {
 		super(TITLE);
@@ -107,11 +113,11 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 		columnPanel = new JPanel();
 		columnPanel.setLayout(new BoxLayout(columnPanel, BoxLayout.PAGE_AXIS));
 		final JScrollPane columnScrollPane = new JScrollPane(columnPanel);
-		columnScrollPane.getVerticalScrollBar().setUnitIncrement(5);
+		columnScrollPane.getVerticalScrollBar().setUnitIncrement(16);
 		columnScrollPane.setBorder(BorderFactory.createTitledBorder("Columns"));
 
-		filterPanel = new JPanel();
-		filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.PAGE_AXIS));
+		filterMap = new HashMap<>();
+		filterPanel = new DragArrangePanel();
 		filterPanel.setBorder(BorderFactory.createTitledBorder("Filters"));
 
 		mainPanel = new JPanel(new BorderLayout());
@@ -165,7 +171,7 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 		} else if (TableColumnEditor.FILTER_ACTION.equals(action)) {
 			TableColumnEditor editor = (TableColumnEditor) e.getSource();
 			if (editor.isFilterOn()) {
-				addFilter(editor.getColumnName());
+				addFilter(editor.getColumnName(), -1);
 			} else {
 				removeFilter(editor.getColumnName());
 			}
@@ -174,11 +180,10 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 
 	@Override
 	public void columnNameChanged(final String oldName, final String newName) {
-		for (int i = 0; i < filterPanel.getComponentCount(); i++) {
-			JComponent filterRow = (JComponent) filterPanel.getComponent(i);
-			for (int j = 0; j < filterRow.getComponentCount(); j++) {
-				TableFilterEditor filterEditor = (TableFilterEditor) filterRow.getComponent(j);
-				filterEditor.columnChanged(oldName, newName);
+		for (int i = 0; i < filterPanel.getRowCount(); i++) {
+			Component[] components = filterPanel.getRowComponents(i);
+			for (Component c : components) {
+				((TableFilterEditor) c).columnChanged(oldName, newName);
 			}
 		}
 	}
@@ -202,30 +207,49 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 		}
 	}
 
-	private void addFilter(final String column) {
-		JComponent filterRow = null;
-		if (filterPanel.getComponentCount() == 0) {
-			filterRow = newFilterRow();
-		} else {
-			int index = filterPanel.getComponentCount() - 1;
-			filterRow = (JComponent) filterPanel.getComponent(index);
-		}
-		final TableFilterEditor newFilter = new TableFilterEditor(column);
+	private void addFilter(final String columnName, final int row) {
+		final TableFilterEditor newFilter = new TableFilterEditor(columnName);
 		newFilter.addActionListener(this);
-		filterRow.add(newFilter);
+		filterMap.put(columnName, newFilter);
+		filterPanel.addComponent(newFilter, row);
 		newFilter.revalidate();
 	}
 
 	private void clearPanels() {
 		columnPanel.removeAll();
 		filterPanel.removeAll();
-		// TODO drag and drop
 	}
 
 	private void exit() {
 		int response = saveCheck();
 		if (response != JOptionPane.CANCEL_OPTION) {
 			dispose();
+		}
+	}
+
+	private void loadColumns() {
+		String[] columns = props.getProperty(COLUMNS).split(" ");
+		clearPanels();
+		for (String column : columns) {
+			if (column.trim().length() < 1) {
+				continue;
+			}
+			columnPanel.add(newColumn(column, props));
+		}
+	}
+
+	private void loadFilters() {
+		String rowCountProp = props.getProperty(FILTER_ROWS);
+		if (rowCountProp != null) {
+			int rowCount = Integer.parseInt(rowCountProp);
+			for (int i = 0; i < rowCount; i++) {
+				String[] filters = props.getProperty(FILTER + "." + ROW + i, "").split(" ");
+				for (String filter : filters) {
+					TableFilterEditor editor = new TableFilterEditor(filter);
+					editor.loadFilterProperties(props);
+					filterPanel.addComponent(editor, i);
+				}
+			}
 		}
 	}
 
@@ -256,52 +280,6 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 					setDirty();
 				}
 				return;
-			}
-		}
-	}
-
-	private void moveFilter(final String action, final TableFilterEditor filter) {
-		for (int i = 0; i < filterPanel.getComponentCount(); i++) {
-			final JComponent filterRow = (JComponent) filterPanel.getComponent(i);
-			for (int j = 0; j < filterRow.getComponentCount(); j++) {
-				if (filter == filterRow.getComponent(j)) {
-					// switch (action) {
-					// case TableFilterEditor.LEFT_ACTION:
-					// if (j > 0) {
-					// filterRow.remove(j);
-					// filterRow.add(filter, j - 1);
-					// }
-					// break;
-					// case TableFilterEditor.RIGHT_ACTION:
-					// if (j < (filterRow.getComponentCount() - 1)) {
-					// filterRow.remove(j);
-					// filterRow.add(filter, j + 1);
-					// }
-					// break;
-					// case TableFilterEditor.UP_ACTION:
-					// if (i > 0) {
-					// filterRow.remove(j);
-					// ((JComponent) filterPanel.getComponent(i - 1)).add(filter);
-					// }
-					// break;
-					// case TableFilterEditor.DOWN_ACTION:
-					// filterRow.remove(j);
-					// if (i < (filterPanel.getComponentCount() - 1)) {
-					// ((JComponent) filterPanel.getComponent(i + 1)).add(filter);
-					// } else {
-					// JComponent newFilterRow = newFilterRow();
-					// newFilterRow.add(filter);
-					// }
-					// break;
-					// }
-					if (filterRow.getComponentCount() == 0) {
-						filterPanel.remove(filterRow);
-					} else {
-						filterRow.revalidate();
-					}
-					filterPanel.revalidate();
-					return;
-				}
 			}
 		}
 	}
@@ -349,14 +327,6 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 		}
 	}
 
-	private JComponent newFilterRow() {
-		JPanel filterRow = new JPanel();
-		filterRow.setLayout(new BoxLayout(filterRow, BoxLayout.LINE_AXIS));
-		filterPanel.add(filterRow);
-		filterPanel.revalidate();
-		return filterRow;
-	}
-
 	private void open() {
 		int response = saveCheck();
 		if (JOptionPane.CANCEL_OPTION == response) {
@@ -370,14 +340,8 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 
 		try {
 			props.load(new FileInputStream(propFile));
-			String[] columns = props.getProperty(COLUMNS).split(" ");
-			clearPanels();
-			for (String column : columns) {
-				if (column.trim().length() < 1) {
-					continue;
-				}
-				columnPanel.add(newColumn(column, props));
-			}
+			loadColumns();
+			loadFilters();
 			queryField.setText(props.getProperty(QUERY));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -386,6 +350,7 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 			clearPanels();
 		}
 		columnPanel.revalidate();
+		filterPanel.revalidate();
 		reset();
 	}
 
@@ -398,18 +363,9 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 	}
 
 	private void removeFilter(final String column) {
-		for (int i = 0; i < filterPanel.getComponentCount(); i++) {
-			JComponent filterRow = (JComponent) filterPanel.getComponent(i);
-			for (int j = 0; j < filterRow.getComponentCount(); j++) {
-				TableFilterEditor filterEditor = (TableFilterEditor) filterRow.getComponent(j);
-				if (filterEditor.getColumnName().equals(column)) {
-					filterRow.remove(filterEditor);
-					if (filterEditor.getComponentCount() == 0) {
-						filterPanel.remove(filterEditor);
-					}
-					return;
-				}
-			}
+		final TableFilterEditor filter = filterMap.remove(column);
+		if (filter != null) {
+			filterPanel.removeComponent(filter);
 		}
 	}
 
@@ -427,16 +383,8 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 			saveAs();
 		} else {
 			props.clear();
-			StringBuilder columns = new StringBuilder();
-			for (int i = 0; i < columnPanel.getComponentCount(); i++) {
-				TableColumnEditor column = (TableColumnEditor) columnPanel.getComponent(i);
-				columns.append(column.getColumnName());
-				if (i < (columnPanel.getComponentCount() - 1)) {
-					columns.append(" ");
-				}
-				column.saveColumnProperties(props);
-			}
-			props.setProperty(COLUMNS, columns.toString());
+			saveColumns();
+			saveFilters();
 			props.setProperty(QUERY, queryField.getText());
 			try {
 				final FileOutputStream output = new FileOutputStream(propFile);
@@ -481,6 +429,37 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 			return response;
 		}
 		return JOptionPane.YES_OPTION;
+	}
+
+	private void saveColumns() {
+		StringBuilder columns = new StringBuilder();
+		for (int i = 0; i < columnPanel.getComponentCount(); i++) {
+			TableColumnEditor column = (TableColumnEditor) columnPanel.getComponent(i);
+			columns.append(column.getColumnName());
+			if (i < (columnPanel.getComponentCount() - 1)) {
+				columns.append(" ");
+			}
+			column.saveColumnProperties(props);
+		}
+		props.setProperty(COLUMNS, columns.toString());
+	}
+
+	private void saveFilters() {
+		final int rowCount = filterPanel.getRowCount();
+		props.setProperty(FILTER_ROWS, Integer.toString(rowCount));
+		for (int i = 0; i < rowCount; i++) {
+			final Component[] components = filterPanel.getRowComponents(i);
+			StringBuilder filterList = new StringBuilder();
+			for (Component component2 : components) {
+				TableFilterEditor filter = (TableFilterEditor) component2;
+				filterList.append(filter.getColumnName());
+				if (i < (components.length - 1)) {
+					filterList.append(" ");
+				}
+				filter.saveFilterProperties(props);
+			}
+			props.setProperty(FILTER + "." + ROW + i, filterList.toString());
+		}
 	}
 
 	private File selectPropFile(final String title, final String actionText) {

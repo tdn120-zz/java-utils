@@ -92,7 +92,16 @@ public class DragArrangePanel extends MyPanel {
 		throw new UnsupportedOperationException("Use addComponent()");
 	}
 
+	/**
+	 * Add <tt>comp</tt> to the given <tt>row</tt>
+	 * 
+	 * @param row
+	 *            The row index, or -1 to add to the last row.
+	 */
 	public void addComponent(final JComponent comp, int row) {
+		if (row < -1) {
+			throw new IllegalArgumentException("Invalid row: " + row);
+		}
 		final DragPanel dragPanel = new DragPanel(comp);
 		final Component dragComp = dragPanel.getDragComponent();
 		dragMap.put(dragComp, dragPanel);
@@ -101,10 +110,13 @@ public class DragArrangePanel extends MyPanel {
 		dragComp.addMouseListener(dragListener);
 		dragComp.addMouseMotionListener(dragListener);
 
+		if (row == -1) {
+			row = Math.max(0, getComponentCount() - 2);
+		}
+
 		if (row == (getComponentCount() - 1)) {
 			addRow();
-		}
-		if (row >= getComponentCount()) {
+		} else if ((row >= getComponentCount())) {
 			row = getComponentCount();
 			addRow();
 		}
@@ -132,9 +144,38 @@ public class DragArrangePanel extends MyPanel {
 		return getComponentCount() - 1;
 	}
 
+	public void removeComponent(final JComponent comp) {
+		for (int i = 0; i < getComponentCount(); i++) {
+			JComponent row = (JComponent) getComponent(i);
+			for (int j = 0; j < row.getComponentCount(); j++) {
+				DragPanel dp = (DragPanel) row.getComponent(j);
+				if (dp.getContent() == comp) {
+					row.remove(dp);
+					row.validate();
+					row.repaint();
+				}
+			}
+		}
+		cleanupRows();
+		return;
+	}
+
 	private void addRow() {
 		super.add(new JPanel(new FlowLayout(FlowLayout.LEFT)));
 		validate();
+	}
+
+	private void cleanupRows() {
+		int i = 0;
+		while (i < (getComponentCount() - 1)) {
+			if (((JComponent) getComponent(i)).getComponentCount() == 0) {
+				remove(i);
+			} else {
+				i++;
+			}
+		}
+		validate();
+		repaint();
 	}
 
 	private final class DragListener extends MouseAdapter {
@@ -207,19 +248,7 @@ public class DragArrangePanel extends MyPanel {
 			} else {
 				cleanupRows();
 			}
-		}
-
-		private void cleanupRows() {
-			int i = 0;
-			while (i < (getComponentCount() - 1)) {
-				if (((JComponent) getComponent(i)).getComponentCount() == 0) {
-					remove(i);
-				} else {
-					i++;
-				}
-			}
-			validate();
-			repaint();
+			revalidate();
 		}
 
 		/**
