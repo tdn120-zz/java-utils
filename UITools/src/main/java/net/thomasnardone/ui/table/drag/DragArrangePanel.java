@@ -10,7 +10,6 @@ import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
@@ -84,7 +83,7 @@ public class DragArrangePanel extends MyPanel {
 		throw new UnsupportedOperationException("Use addComponent()");
 	}
 
-	public void addComponent(final Component comp, int row) {
+	public void addComponent(final JComponent comp, int row) {
 		final DragPanel dragPanel = new DragPanel(comp);
 		final Component dragComp = dragPanel.getDragComponent();
 		dragMap.put(dragComp, dragPanel);
@@ -104,9 +103,24 @@ public class DragArrangePanel extends MyPanel {
 		validate();
 	}
 
-	public List<Component>[] getRows() {
-		// TODO
-		return null;
+	public Component[] getRowComponents(final int row) {
+		if (row >= getRowCount()) {
+			throw new ArrayIndexOutOfBoundsException(row);
+		}
+
+		final JComponent rowComp = (JComponent) getComponent(row);
+		Component[] components = null;
+		synchronized (rowComp.getTreeLock()) {
+			components = rowComp.getComponents();
+		}
+		for (int i = 0; i < components.length; i++) {
+			components[i] = ((DragPanel) components[i]).getContent();
+		}
+		return components;
+	}
+
+	public int getRowCount() {
+		return getComponentCount() - 1;
 	}
 
 	private void addRow() {
@@ -250,17 +264,22 @@ public class DragArrangePanel extends MyPanel {
 	}
 
 	private class DragPanel extends MyPanel {
-
 		private static final long	serialVersionUID	= 1L;
 
+		private final Component		content;
 		private final JLabel		dragComponent;
 
 		public DragPanel(final Component content) {
 			super(new FlowLayout(FlowLayout.LEFT));
+			this.content = content;
 			dragComponent = new JLabel(loadIcon("drag.png"));
 			dragComponent.setCursor(new Cursor(Cursor.HAND_CURSOR));
 			add(dragComponent);
 			add(content);
+		}
+
+		public Component getContent() {
+			return content;
 		}
 
 		public Component getDragComponent() {

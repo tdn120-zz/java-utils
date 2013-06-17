@@ -1,6 +1,9 @@
 package net.thomasnardone.ui.table.drag;
 
+import java.awt.Component;
 import java.awt.HeadlessException;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.JLabel;
 
@@ -13,13 +16,31 @@ public class DragProto extends MyFrame {
 		new DragProto().setVisible(true);
 	}
 
+	private DragArrangePanel	mainPanel;
+
 	public DragProto() throws HeadlessException {
-		super(EXIT_ON_CLOSE);
+		super(DO_NOTHING_ON_CLOSE);
+		addWindowListener(new WindowAdapter() {
+
+			@Override
+			public void windowClosing(final WindowEvent e) {
+				for (int i = 0; i < mainPanel.getRowCount(); i++) {
+					Component[] row = mainPanel.getRowComponents(i);
+					for (Component c : row) {
+						System.out.print(((JLabel) c).getText());
+						System.out.print("\t");
+					}
+					System.out.println();
+				}
+				dispose();
+			}
+
+		});
 	}
 
 	@Override
 	protected void setupFrame() {
-		DragArrangePanel mainPanel = new DragArrangePanel();
+		mainPanel = new DragArrangePanel();
 		addComponent(mainPanel, "One", 0);
 		addComponent(mainPanel, "Two", 0);
 		addComponent(mainPanel, "Three", 1);
