@@ -21,6 +21,15 @@ import javax.swing.SwingUtilities;
 
 import net.thomasnardone.ui.table.MyPanel;
 
+/**
+ * Panel that can be used to arrange components via mouse dragging. Since it's all in the same panel, drag and drop, and the
+ * serialization it involves, is not required.
+ * 
+ * @see #addComponent(JComponent, int)
+ * @see #getRowCount()
+ * @see #getRowComponents(int)
+ * @author Thomas Nardone
+ */
 public class DragArrangePanel extends MyPanel {
 	private static final Color				PLACEHOLDER_BG		= new Color(216, 96, 96, 128);
 	private static final long				serialVersionUID	= 1L;
