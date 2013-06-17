@@ -19,7 +19,7 @@ public class DragProto extends MyFrame {
 
 	@Override
 	protected void setupFrame() {
-		DragParentPanel mainPanel = new DragParentPanel();
+		DragArrangePanel mainPanel = new DragArrangePanel();
 		addComponent(mainPanel, "One", 0);
 		addComponent(mainPanel, "Two", 0);
 		addComponent(mainPanel, "Three", 1);
@@ -29,7 +29,7 @@ public class DragProto extends MyFrame {
 		setContentPane(mainPanel);
 	}
 
-	private void addComponent(final DragParentPanel panel, final String text, final int row) {
+	private void addComponent(final DragArrangePanel panel, final String text, final int row) {
 		JLabel label = new JLabel(text);
 		panel.addComponent(label, row);
 	}

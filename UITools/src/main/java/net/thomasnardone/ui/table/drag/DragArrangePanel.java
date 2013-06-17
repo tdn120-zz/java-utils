@@ -22,7 +22,7 @@ import javax.swing.SwingUtilities;
 
 import net.thomasnardone.ui.table.MyPanel;
 
-public class DragParentPanel extends MyPanel {
+public class DragArrangePanel extends MyPanel {
 	private static final Color				PLACEHOLDER_BG		= new Color(216, 96, 96, 128);
 	private static final long				serialVersionUID	= 1L;
 
@@ -33,7 +33,7 @@ public class DragParentPanel extends MyPanel {
 	private final Map<Component, Component>	dragMap;
 	private final JComponent				placeHolder;
 
-	public DragParentPanel() {
+	public DragArrangePanel() {
 		dragListener = new DragListener();
 		dragMap = new HashMap<>();
 		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
@@ -117,7 +117,7 @@ public class DragParentPanel extends MyPanel {
 	private final class DragListener extends MouseAdapter {
 		@Override
 		public void mouseDragged(final MouseEvent e) {
-			Point point = SwingUtilities.convertPoint((Component) e.getSource(), e.getPoint(), DragParentPanel.this);
+			Point point = SwingUtilities.convertPoint((Component) e.getSource(), e.getPoint(), DragArrangePanel.this);
 			for (int i = 0; i < getComponentCount(); i++) {
 				JComponent row = (JComponent) getComponent(i);
 				if (row.getComponentCount() == 0) {
@@ -127,7 +127,7 @@ public class DragParentPanel extends MyPanel {
 					final int count = row.getComponentCount();
 					for (int j = 0; j < count; j++) {
 						final Component nextComp = row.getComponent(j);
-						Point rowPoint = SwingUtilities.convertPoint(DragParentPanel.this, point, row);
+						Point rowPoint = SwingUtilities.convertPoint(DragArrangePanel.this, point, row);
 						if (contains(rowPoint, nextComp)) {
 							movePlaceHolder(row, i, j);
 							break;
