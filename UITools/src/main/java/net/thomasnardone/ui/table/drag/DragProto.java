@@ -2,6 +2,8 @@ package net.thomasnardone.ui.table.drag;
 
 import java.awt.HeadlessException;
 
+import javax.swing.JLabel;
+
 import net.thomasnardone.ui.swing.MyFrame;
 
 @SuppressWarnings("serial")
@@ -28,8 +30,8 @@ public class DragProto extends MyFrame {
 	}
 
 	private void addComponent(final DragParentPanel panel, final String text, final int row) {
-		DragPanel dp = new DragPanel(text);
-		panel.addComponent(dp, dp.getDragComponent(), row);
+		JLabel label = new JLabel(text);
+		panel.addComponent(label, row);
 	}
 
 }

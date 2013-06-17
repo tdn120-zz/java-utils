@@ -10,6 +10,7 @@ import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
@@ -83,8 +84,10 @@ public class DragParentPanel extends MyPanel {
 		throw new UnsupportedOperationException("Use addComponent()");
 	}
 
-	public void addComponent(final Component comp, final Component dragComp, int row) {
-		dragMap.put(dragComp, comp);
+	public void addComponent(final Component comp, int row) {
+		final DragPanel dragPanel = new DragPanel(comp);
+		final Component dragComp = dragPanel.getDragComponent();
+		dragMap.put(dragComp, dragPanel);
 		dragComp.removeMouseListener(dragListener);
 		dragComp.removeMouseMotionListener(dragListener);
 		dragComp.addMouseListener(dragListener);
@@ -97,8 +100,13 @@ public class DragParentPanel extends MyPanel {
 			row = getComponentCount();
 			addRow();
 		}
-		((JComponent) getComponent(row)).add(comp);
+		((JComponent) getComponent(row)).add(dragPanel);
 		validate();
+	}
+
+	public List<Component>[] getRows() {
+		// TODO
+		return null;
 	}
 
 	private void addRow() {
@@ -122,8 +130,10 @@ public class DragParentPanel extends MyPanel {
 						Point rowPoint = SwingUtilities.convertPoint(DragParentPanel.this, point, row);
 						if (contains(rowPoint, nextComp)) {
 							movePlaceHolder(row, i, j);
+							break;
 						} else if ((j == (count - 1)) && past(point, nextComp)) {
 							movePlaceHolder(row, i, j);
+							break;
 						}
 					}
 					return;
@@ -203,7 +213,6 @@ public class DragParentPanel extends MyPanel {
 			if ((i == currentI) && (j == currentJ)) {
 				return;
 			}
-			System.out.println("Move to " + i + ", " + j);
 			final Container oldRow = placeHolder.getParent();
 			if (oldRow == null) {
 				return;
@@ -212,7 +221,7 @@ public class DragParentPanel extends MyPanel {
 				try {
 					row.add(placeHolder, j);
 				} catch (Exception e) {
-					System.out.println("Illegal Position: " + j);
+					System.out.println("Illegal Position: [" + i + ", " + j + "]");
 				}
 				row.validate();
 				row.repaint();
@@ -237,6 +246,25 @@ public class DragParentPanel extends MyPanel {
 		private boolean past(final Point p, final Component comp) {
 			final Rectangle r = comp.getBounds();
 			return (p.x > (r.x + r.width)) && (p.y > r.y) && (p.y < (r.y + r.height));
+		}
+	}
+
+	private class DragPanel extends MyPanel {
+
+		private static final long	serialVersionUID	= 1L;
+
+		private final JLabel		dragComponent;
+
+		public DragPanel(final Component content) {
+			super(new FlowLayout(FlowLayout.LEFT));
+			dragComponent = new JLabel(loadIcon("drag.png"));
+			dragComponent.setCursor(new Cursor(Cursor.HAND_CURSOR));
+			add(dragComponent);
+			add(content);
+		}
+
+		public Component getDragComponent() {
+			return dragComponent;
 		}
 	}
 }
