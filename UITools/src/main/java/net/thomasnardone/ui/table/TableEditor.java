@@ -41,11 +41,12 @@ import net.thomasnardone.ui.swing.DocumentAdapter;
 import net.thomasnardone.ui.swing.UndoTextArea;
 import net.thomasnardone.ui.table.TableColumnEditor.ColumnNameChangeListener;
 import net.thomasnardone.ui.table.drag.DragArrangePanel;
+import net.thomasnardone.ui.table.drag.DragArrangePanel.ArrangeListener;
 import net.thomasnardone.ui.util.SortedProperties;
 
-public class TableEditor extends JFrame implements ActionListener, ColumnNameChangeListener {
-
+public class TableEditor extends JFrame implements ActionListener, ColumnNameChangeListener, ArrangeListener {
 	public static final String			FILTER				= "filter";
+
 	private static final String			COLUMNS				= "columns";
 	private static final String			EXIT				= "exit";
 	private static final String			FILTER_ROWS			= FILTER + ".rows";
@@ -75,6 +76,7 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 	}
 
 	private final JPanel							columnPanel;
+
 	private boolean									dirty;
 	private final Map<String, TableFilterEditor>	filterMap;
 	private final DragArrangePanel					filterPanel;
@@ -119,6 +121,7 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 		filterMap = new HashMap<>();
 		filterPanel = new DragArrangePanel();
 		filterPanel.setBorder(BorderFactory.createTitledBorder("Filters"));
+		filterPanel.addArrangeListener(this);
 
 		mainPanel = new JPanel(new BorderLayout());
 		mainPanel.add(queryPanel, BorderLayout.NORTH);
@@ -186,6 +189,11 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 				((TableFilterEditor) c).columnChanged(oldName, newName);
 			}
 		}
+	}
+
+	@Override
+	public void componentMoved() {
+		setDirty();
 	}
 
 	public List<String> getColumnNames() {
@@ -402,6 +410,10 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 
 	private void saveAs() {
 		File newFile = selectPropFile("Save As", "Save");
+		if (newFile == null) {
+			return;
+		}
+
 		while (newFile.exists() && ((propFile == null) || !newFile.equals(propFile))) {
 			final int response = JOptionPane.showConfirmDialog(this, "Are you sure you want to overwrite " + newFile.getName()
 					+ "?", "Overwrite " + newFile.getName() + "?", JOptionPane.YES_NO_CANCEL_OPTION);
@@ -477,7 +489,10 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 			}
 		});
 		cf.setDialogTitle(title);
-		cf.showDialog(this, actionText);
+		final int option = cf.showDialog(this, actionText);
+		if (JFileChooser.APPROVE_OPTION != option) {
+			return null;
+		}
 		final File file = cf.getSelectedFile();
 		if (file != null) {
 			prefs.put("lastDir", file.getParent());

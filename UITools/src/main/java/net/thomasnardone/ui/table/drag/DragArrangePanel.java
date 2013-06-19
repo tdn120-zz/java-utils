@@ -10,7 +10,9 @@ import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -33,15 +35,19 @@ import net.thomasnardone.ui.table.MyPanel;
 public class DragArrangePanel extends MyPanel {
 	private static final Color				PLACEHOLDER_BG		= new Color(216, 96, 96, 128);
 	private static final long				serialVersionUID	= 1L;
-
 	private int								currentI;
+
 	private int								currentJ;
 	private Component						dragComponent;
 	private final DragListener				dragListener;
 	private final Map<Component, Component>	dragMap;
+	private final Set<ArrangeListener>		listeners;
+	private int								originalI;
+	private int								originalJ;
 	private final JComponent				placeHolder;
 
 	public DragArrangePanel() {
+		listeners = new LinkedHashSet<>();
 		dragListener = new DragListener();
 		dragMap = new HashMap<>();
 		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
@@ -92,6 +98,10 @@ public class DragArrangePanel extends MyPanel {
 		throw new UnsupportedOperationException("Use addComponent()");
 	}
 
+	public void addArrangeListener(final ArrangeListener listener) {
+		listeners.add(listener);
+	}
+
 	/**
 	 * Add <tt>comp</tt> to the given <tt>row</tt>
 	 * 
@@ -119,6 +129,7 @@ public class DragArrangePanel extends MyPanel {
 		} else if ((row >= getComponentCount())) {
 			row = getComponentCount();
 			addRow();
+			addRow();
 		}
 		((JComponent) getComponent(row)).add(dragPanel);
 		validate();
@@ -144,6 +155,10 @@ public class DragArrangePanel extends MyPanel {
 		return getComponentCount() - 1;
 	}
 
+	public void removeArrangeListener(final ArrangeListener listener) {
+		listeners.remove(listener);
+	}
+
 	public void removeComponent(final JComponent comp) {
 		for (int i = 0; i < getComponentCount(); i++) {
 			JComponent row = (JComponent) getComponent(i);
@@ -161,7 +176,9 @@ public class DragArrangePanel extends MyPanel {
 	}
 
 	private void addRow() {
-		super.add(new JPanel(new FlowLayout(FlowLayout.LEFT)));
+		final JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		panel.setBorder(BorderFactory.createLineBorder(Color.red));
+		super.add(panel);
 		validate();
 	}
 
@@ -178,7 +195,12 @@ public class DragArrangePanel extends MyPanel {
 		repaint();
 	}
 
+	public interface ArrangeListener {
+		void componentMoved();
+	}
+
 	private final class DragListener extends MouseAdapter {
+
 		@Override
 		public void mouseDragged(final MouseEvent e) {
 			Point point = SwingUtilities.convertPoint((Component) e.getSource(), e.getPoint(), DragArrangePanel.this);
@@ -211,6 +233,8 @@ public class DragArrangePanel extends MyPanel {
 				JComponent row = (JComponent) getComponent(i);
 				for (int j = 0; j < row.getComponentCount(); j++) {
 					if (dragMap.get(e.getSource()) == row.getComponent(j)) {
+						originalI = i;
+						originalJ = j;
 						currentI = i;
 						currentJ = j;
 						dragComponent = dragMap.get(e.getSource());
@@ -245,10 +269,12 @@ public class DragArrangePanel extends MyPanel {
 			}
 			if (currentI == (getComponentCount() - 1)) {
 				addRow();
-			} else {
-				cleanupRows();
 			}
+			cleanupRows();
 			revalidate();
+			if ((currentI != originalI) || (currentJ != originalJ)) {
+				fireComponentMoved();
+			}
 		}
 
 		/**
@@ -259,6 +285,12 @@ public class DragArrangePanel extends MyPanel {
 		 */
 		private boolean contains(final Point p, final Component comp) {
 			return comp.getBounds().contains(p);
+		}
+
+		private void fireComponentMoved() {
+			for (ArrangeListener listener : listeners.toArray(new ArrangeListener[listeners.size()])) {
+				listener.componentMoved();
+			}
 		}
 
 		private void movePlaceHolder(final JComponent row, final int i, final int j) {
