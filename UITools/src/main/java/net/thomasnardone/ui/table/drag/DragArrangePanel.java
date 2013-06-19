@@ -177,7 +177,6 @@ public class DragArrangePanel extends MyPanel {
 
 	private void addRow() {
 		final JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		panel.setBorder(BorderFactory.createLineBorder(Color.red));
 		super.add(panel);
 		validate();
 	}
