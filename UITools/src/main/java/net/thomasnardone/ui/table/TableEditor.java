@@ -189,6 +189,8 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 				((TableFilterEditor) c).columnChanged(oldName, newName);
 			}
 		}
+		filterPanel.validate();
+		filterPanel.repaint();
 	}
 
 	@Override
