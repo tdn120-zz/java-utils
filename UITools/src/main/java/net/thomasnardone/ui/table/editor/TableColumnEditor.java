@@ -1,4 +1,4 @@
-package net.thomasnardone.ui.table;
+package net.thomasnardone.ui.table.editor;
 
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
@@ -17,6 +17,7 @@ import javax.swing.event.DocumentListener;
 import net.thomasnardone.ui.DataType;
 import net.thomasnardone.ui.EditType;
 import net.thomasnardone.ui.swing.MyComboBox;
+import net.thomasnardone.ui.swing.MyPanel;
 
 public class TableColumnEditor extends MyPanel implements ActionListener {
 	public static final String					ADD_ACTION			= "column.add";

@@ -1,4 +1,4 @@
-package net.thomasnardone.ui.table;
+package net.thomasnardone.ui.table.editor;
 
 import java.awt.Color;
 import java.util.Properties;
@@ -12,6 +12,7 @@ import javax.swing.JPanel;
 
 import net.thomasnardone.ui.FilterType;
 import net.thomasnardone.ui.swing.MyComboBox;
+import net.thomasnardone.ui.swing.MyPanel;
 import net.thomasnardone.ui.swing.SortedComboModel;
 
 public class TableFilterEditor extends MyPanel {

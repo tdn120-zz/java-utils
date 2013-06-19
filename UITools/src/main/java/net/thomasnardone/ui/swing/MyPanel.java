@@ -1,4 +1,4 @@
-package net.thomasnardone.ui.table;
+package net.thomasnardone.ui.swing;
 
 import java.awt.Color;
 import java.awt.Insets;
@@ -24,7 +24,6 @@ import javax.swing.JToggleButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
 
-import net.thomasnardone.ui.swing.DocumentAdapter;
 
 public class MyPanel extends JPanel implements ActionListener {
 	private static final long			serialVersionUID	= 1L;

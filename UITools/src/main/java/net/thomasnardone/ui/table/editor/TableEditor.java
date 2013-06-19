@@ -1,4 +1,4 @@
-package net.thomasnardone.ui.table;
+package net.thomasnardone.ui.table.editor;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -38,10 +38,11 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.filechooser.FileFilter;
 
 import net.thomasnardone.ui.swing.DocumentAdapter;
+import net.thomasnardone.ui.swing.DragArrangePanel;
+import net.thomasnardone.ui.swing.MyPanel;
 import net.thomasnardone.ui.swing.UndoTextArea;
-import net.thomasnardone.ui.table.TableColumnEditor.ColumnNameChangeListener;
-import net.thomasnardone.ui.table.drag.DragArrangePanel;
-import net.thomasnardone.ui.table.drag.DragArrangePanel.ArrangeListener;
+import net.thomasnardone.ui.swing.DragArrangePanel.ArrangeListener;
+import net.thomasnardone.ui.table.editor.TableColumnEditor.ColumnNameChangeListener;
 import net.thomasnardone.ui.util.SortedProperties;
 
 public class TableEditor extends JFrame implements ActionListener, ColumnNameChangeListener, ArrangeListener {

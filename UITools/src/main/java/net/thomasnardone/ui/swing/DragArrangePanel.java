@@ -1,4 +1,4 @@
-package net.thomasnardone.ui.table.drag;
+package net.thomasnardone.ui.swing;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -21,7 +21,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import net.thomasnardone.ui.table.MyPanel;
 
 /**
  * Panel that can be used to arrange components via mouse dragging. Since it's all in the same panel, drag and drop, and the
