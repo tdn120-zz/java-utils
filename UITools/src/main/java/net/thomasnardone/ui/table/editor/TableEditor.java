@@ -42,20 +42,16 @@ import net.thomasnardone.ui.swing.DragArrangePanel;
 import net.thomasnardone.ui.swing.MyPanel;
 import net.thomasnardone.ui.swing.UndoTextArea;
 import net.thomasnardone.ui.swing.DragArrangePanel.ArrangeListener;
+import net.thomasnardone.ui.table.ColumnManager;
 import net.thomasnardone.ui.table.editor.TableColumnEditor.ColumnNameChangeListener;
 import net.thomasnardone.ui.util.SortedProperties;
 
 public class TableEditor extends JFrame implements ActionListener, ColumnNameChangeListener, ArrangeListener {
-	public static final String			FILTER				= "filter";
-
-	private static final String			COLUMNS				= "columns";
 	private static final String			EXIT				= "exit";
-	private static final String			FILTER_ROWS			= FILTER + ".rows";
 	private static final String			NEW					= "new";
 	private static final String			OPEN				= "open";
 	private static final Preferences	prefs				= Preferences.userNodeForPackage(TableEditor.class);
 	private static final String			QUERY				= "query";
-	private static final String			ROW					= "row";
 	private static final String			SAVE				= "save";
 	private static final String			SAVE_AS				= "save_as";
 	private static final long			serialVersionUID	= 1L;
@@ -239,7 +235,7 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 	}
 
 	private void loadColumns() {
-		String[] columns = props.getProperty(COLUMNS).split(" ");
+		String[] columns = props.getProperty(ColumnManager.COLUMNS).split(" ");
 		clearPanels();
 		for (String column : columns) {
 			if (column.trim().length() < 1) {
@@ -250,11 +246,11 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 	}
 
 	private void loadFilters() {
-		String rowCountProp = props.getProperty(FILTER_ROWS);
+		String rowCountProp = props.getProperty(ColumnManager.FILTER_ROWS);
 		if (rowCountProp != null) {
 			int rowCount = Integer.parseInt(rowCountProp);
 			for (int i = 0; i < rowCount; i++) {
-				String[] filters = props.getProperty(FILTER + "." + ROW + i, "").split(" ");
+				String[] filters = props.getProperty(ColumnManager.FILTER + "." + ColumnManager.ROW + i, "").split(" ");
 				for (String filter : filters) {
 					TableFilterEditor editor = new TableFilterEditor(filter);
 					editor.loadFilterProperties(props);
@@ -456,12 +452,12 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 			}
 			column.saveColumnProperties(props);
 		}
-		props.setProperty(COLUMNS, columns.toString());
+		props.setProperty(ColumnManager.COLUMNS, columns.toString());
 	}
 
 	private void saveFilters() {
 		final int rowCount = filterPanel.getRowCount();
-		props.setProperty(FILTER_ROWS, Integer.toString(rowCount));
+		props.setProperty(ColumnManager.FILTER_ROWS, Integer.toString(rowCount));
 		for (int i = 0; i < rowCount; i++) {
 			final Component[] components = filterPanel.getRowComponents(i);
 			StringBuilder filterList = new StringBuilder();
@@ -473,7 +469,7 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 				}
 				filter.saveFilterProperties(props);
 			}
-			props.setProperty(FILTER + "." + ROW + i, filterList.toString());
+			props.setProperty(ColumnManager.FILTER + "." + ColumnManager.ROW + i, filterList.toString());
 		}
 	}
 

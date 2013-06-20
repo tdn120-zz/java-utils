@@ -18,6 +18,7 @@ import net.thomasnardone.ui.DataType;
 import net.thomasnardone.ui.EditType;
 import net.thomasnardone.ui.swing.MyComboBox;
 import net.thomasnardone.ui.swing.MyPanel;
+import net.thomasnardone.ui.table.ColumnManager;
 
 public class TableColumnEditor extends MyPanel implements ActionListener {
 	public static final String					ADD_ACTION			= "column.add";
@@ -26,10 +27,6 @@ public class TableColumnEditor extends MyPanel implements ActionListener {
 	public static final String					FILTER_ACTION		= "column.toggleFilter";
 	public static final String					REMOVE_ACTION		= "column.remove";
 	public static final String					UP_ACTION			= "column.up";
-	private static final String					DATA_TYPE			= "dataType";
-	private static final String					DISPLAY_NAME		= "displayName";
-	private static final String					EDIT_TYPE			= "editType";
-	private static final String					PREFIX				= "column.";
 	private static final long					serialVersionUID	= 1L;
 	private static final int					STRUT				= 5;
 
@@ -109,10 +106,10 @@ public class TableColumnEditor extends MyPanel implements ActionListener {
 			clear();
 		} else {
 			nameField.setText(column);
-			displayNameField.setText(props.getProperty(PREFIX + column + "." + DISPLAY_NAME));
-			dataTypeCombo.setSelectedItem(DataType.valueOf(props.getProperty(PREFIX + column + "." + DATA_TYPE)));
-			editTypeCombo.setSelectedItem(EditType.valueOf(props.getProperty(PREFIX + column + "." + EDIT_TYPE)));
-			final String filterType = props.getProperty(TableEditor.FILTER + "." + column + "." + TableFilterEditor.TYPE);
+			displayNameField.setText(props.getProperty(ColumnManager.PREFIX + column + "." + ColumnManager.DISPLAY_NAME));
+			dataTypeCombo.setSelectedItem(DataType.valueOf(props.getProperty(ColumnManager.PREFIX + column + "." + ColumnManager.DATA_TYPE)));
+			editTypeCombo.setSelectedItem(EditType.valueOf(props.getProperty(ColumnManager.PREFIX + column + "." + ColumnManager.EDIT_TYPE)));
+			final String filterType = props.getProperty(ColumnManager.FILTER + "." + column + "." + ColumnManager.TYPE);
 			filterButton.setSelected(filterType != null);
 		}
 	}
@@ -126,12 +123,12 @@ public class TableColumnEditor extends MyPanel implements ActionListener {
 			return;
 		}
 		String newColumn = nameField.getText();
-		props.setProperty(PREFIX + newColumn + "." + DISPLAY_NAME, getDisplayName());
+		props.setProperty(ColumnManager.PREFIX + newColumn + "." + ColumnManager.DISPLAY_NAME, getDisplayName());
 		if (dataTypeCombo.getSelectedIndex() > -1) {
-			props.setProperty(PREFIX + newColumn + "." + DATA_TYPE, dataTypeCombo.getSelectedItem().toString());
+			props.setProperty(ColumnManager.PREFIX + newColumn + "." + ColumnManager.DATA_TYPE, dataTypeCombo.getSelectedItem().toString());
 		}
 		if (editTypeCombo.getSelectedIndex() > -1) {
-			props.setProperty(PREFIX + newColumn + "." + EDIT_TYPE, editTypeCombo.getSelectedItem().toString());
+			props.setProperty(ColumnManager.PREFIX + newColumn + "." + ColumnManager.EDIT_TYPE, editTypeCombo.getSelectedItem().toString());
 		}
 	}
 

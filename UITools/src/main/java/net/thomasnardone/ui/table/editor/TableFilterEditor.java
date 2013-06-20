@@ -14,10 +14,10 @@ import net.thomasnardone.ui.FilterType;
 import net.thomasnardone.ui.swing.MyComboBox;
 import net.thomasnardone.ui.swing.MyPanel;
 import net.thomasnardone.ui.swing.SortedComboModel;
+import net.thomasnardone.ui.table.ColumnManager;
 
 public class TableFilterEditor extends MyPanel {
 	public static final String				EDIT_ACTION			= "filter.edit";
-	public static final String				TYPE				= "type";
 	private static final long				serialVersionUID	= 1L;
 
 	private final JComponent				borderPanel;
@@ -53,7 +53,7 @@ public class TableFilterEditor extends MyPanel {
 	}
 
 	public void loadFilterProperties(final Properties props) {
-		final String type = props.getProperty(TableEditor.FILTER + "." + columnName + "." + TYPE);
+		final String type = props.getProperty(ColumnManager.FILTER + "." + columnName + "." + ColumnManager.TYPE);
 		if (type != null) {
 			typeCombo.setSelectedItem(FilterType.valueOf(type));
 		} else {
@@ -62,6 +62,6 @@ public class TableFilterEditor extends MyPanel {
 	}
 
 	public void saveFilterProperties(final Properties props) {
-		props.put(TableEditor.FILTER + "." + columnName + "." + TYPE, typeCombo.getSelectedItem().toString());
+		props.put(ColumnManager.FILTER + "." + columnName + "." + ColumnManager.TYPE, typeCombo.getSelectedItem().toString());
 	}
 }

@@ -42,6 +42,10 @@ public class AutoTableModel extends AbstractTableModel {
 		return columns.length;
 	}
 
+	public String getColumnId(final int column) {
+		return columns[column].getName();
+	}
+
 	@Override
 	public String getColumnName(final int column) {
 		return columns[column].getDisplayName();

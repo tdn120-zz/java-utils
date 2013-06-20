@@ -1,8 +1,14 @@
 package net.thomasnardone.ui.rest;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
+
+import net.thomasnardone.ui.table.ColumnManager;
 
 public class DummyTableClient extends TableClient {
 
@@ -114,32 +120,31 @@ public class DummyTableClient extends TableClient {
 
 	@Override
 	public TableInfo getTableInfo(final String tableName) {
-		List<ColumnInfo> columns = new ArrayList<>();
 		List<FormatInfo> formats = new ArrayList<>();
 
-		columns.add(columnInfo("category", "Category", "String", "ReadOnly"));
-		columns.add(columnInfo("genus", "Genus", "String", "ReadOnly"));
-		columns.add(columnInfo("variety", "Variety", "String", "ReadOnly"));
-		columns.add(columnInfo("size", "Size", "String", "ReadOnly"));
-		columns.add(columnInfo("source", "Source", "String", "ReadOnly"));
-		columns.add(columnInfo("request", "Request", "Integer", "Text"));
-		columns.add(columnInfo("rWeek", "Week", "Integer", "Combo"));
-
 		formats.add(formatInfo("Integer", "#,##0"));
+
+		Properties props = new Properties();
+		try {
+			props.load(new FileInputStream("src/main/config/request_table.properties"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		ColumnManager mgr = new ColumnManager(props);
+
+		List<ColumnInfo> columns = mgr.getColumns();
+		List<FilterInfo> filters = mgr.getFilters();
+		for (FilterInfo filter : filters) {
+			if ("size".equals(filter.getColumnName())) {
+				filter.setValues(Arrays.asList("#1", "#2"));
+			}
+		}
 
 		TableInfo info = new TableInfo();
 		info.setColumns(columns);
 		info.setFormats(formats);
+		info.setFilters(filters);
 		return info;
-	}
-
-	private ColumnInfo columnInfo(final String name, final String displayName, final String dataType, final String editType) {
-		ColumnInfo column = new ColumnInfo();
-		column.setName(name);
-		column.setDisplayName(displayName);
-		column.setDataType(dataType);
-		column.setEditType(editType);
-		return column;
 	}
 
 	private FormatInfo formatInfo(final String dataType, final String format) {
