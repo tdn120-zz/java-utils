@@ -19,7 +19,7 @@ public class TextFilter extends AbstractFilter {
 
 	@Override
 	public boolean include(final Object value) {
-		return (pattern == null) || pattern.matcher((String) value).matches();
+		return (pattern == null) || pattern.matcher(((String) value).toLowerCase()).matches();
 	}
 
 	@Override
@@ -47,8 +47,10 @@ public class TextFilter extends AbstractFilter {
 		if (field.getText().trim().isEmpty()) {
 			pattern = null;
 		} else {
-			String text = field.getText().replaceAll("\\*", ".*");
-			if (!text.endsWith(".*")) {
+			String text = field.getText().toLowerCase().replaceAll("\\*", ".*");
+			if (text.endsWith(" ")) {
+				text = text.substring(0, text.length() - 1);
+			} else if (!text.endsWith(".*")) {
 				text = text + ".*";
 			}
 			pattern = Pattern.compile(text);
