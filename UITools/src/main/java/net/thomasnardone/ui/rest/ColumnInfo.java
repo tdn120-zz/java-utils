@@ -1,13 +1,16 @@
 package net.thomasnardone.ui.rest;
 
+import java.util.List;
+
 import net.thomasnardone.ui.DataType;
 import net.thomasnardone.ui.EditType;
 
 public class ColumnInfo {
-	private DataType	dataType;
-	private String		displayName;
-	private EditType	editType;
-	private String		name;
+	private DataType		dataType;
+	private String			displayName;
+	private EditType		editType;
+	private String			name;
+	private List<String>	values;
 
 	public ColumnInfo() {}
 
@@ -25,6 +28,10 @@ public class ColumnInfo {
 
 	public String getName() {
 		return name;
+	}
+
+	public List<String> getValues() {
+		return values;
 	}
 
 	public void setDataType(final DataType dataType) {
@@ -49,5 +56,9 @@ public class ColumnInfo {
 
 	public void setName(final String name) {
 		this.name = name;
+	}
+
+	public void setValues(final List<String> values) {
+		this.values = values;
 	}
 }

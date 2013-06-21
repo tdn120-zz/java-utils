@@ -48,7 +48,9 @@ public class AutoTable extends JPanel implements FilterListener {
 		model = new AutoTableModel(info.getColumns(), info.getFormats());
 		model.loadData(client.getData(null));
 		table = new JXTable(model);
-
+		for (int i = 0; i < table.getColumnCount(); i++) {
+			table.getColumn(i).setCellEditor(EditorFactory.getEditor(info.getColumns().get(i), model.getFormat(i)));
+		}
 		table.setAutoResizeMode(JXTable.AUTO_RESIZE_OFF);
 		table.packAll();
 		JScrollPane scrollPane = new JScrollPane(table);

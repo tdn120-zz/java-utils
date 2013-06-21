@@ -133,6 +133,18 @@ public class DummyTableClient extends TableClient {
 		ColumnManager mgr = new ColumnManager(props);
 
 		List<ColumnInfo> columns = mgr.getColumns();
+		for (ColumnInfo column : columns) {
+			if ("source".equals(column.getName())) {
+				column.setValues(Arrays.asList("Aris", "Ball Dar.", "Centerton", "Ednie", "KubePack", "North Creek", "Pioneer",
+						"Seed", "Walters"));
+			} else if ("rWeek".equals(column.getName())) {
+				List<String> weeks = new ArrayList<>();
+				for (int i = 1; i < 53; i++) {
+					weeks.add(Integer.toString(i));
+				}
+				column.setValues(weeks);
+			}
+		}
 		List<FilterInfo> filters = mgr.getFilters();
 		for (FilterInfo filter : filters) {
 			if ("size".equals(filter.getColumnName())) {

@@ -20,8 +20,10 @@ public final class SortedComboModel<T extends Comparable<T>> extends AbstractLis
 
 	public SortedComboModel(final List<T> items) {
 		this();
-		for (T item : items) {
-			addItem(item);
+		if (items != null) {
+			for (T item : items) {
+				addItem(item);
+			}
 		}
 	}
 

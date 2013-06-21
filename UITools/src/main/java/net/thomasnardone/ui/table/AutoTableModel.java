@@ -51,6 +51,10 @@ public class AutoTableModel extends AbstractTableModel {
 		return columns[column].getDisplayName();
 	}
 
+	public Format getFormat(final int column) {
+		return formats[column];
+	}
+
 	@Override
 	public int getRowCount() {
 		return rawData == null ? 0 : rawData.length;
