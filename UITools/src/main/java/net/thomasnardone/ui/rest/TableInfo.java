@@ -2,6 +2,9 @@ package net.thomasnardone.ui.rest;
 
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
 public class TableInfo {
 	private List<ColumnInfo>	columns;
 	private List<FilterInfo>	filters;

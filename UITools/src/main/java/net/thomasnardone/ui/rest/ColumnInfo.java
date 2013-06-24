@@ -2,15 +2,19 @@ package net.thomasnardone.ui.rest;
 
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 import net.thomasnardone.ui.DataType;
 import net.thomasnardone.ui.EditType;
 
+@XmlRootElement
 public class ColumnInfo {
-	private DataType		dataType;
-	private String			displayName;
-	private EditType		editType;
-	private String			name;
-	private List<String>	values;
+	private DataType			dataType;
+	private String				displayName;
+	private EditType			editType;
+	private String				name;
+	private transient String	valueQuery;
+	private List<String>		values;
 
 	public ColumnInfo() {}
 
@@ -28,6 +32,10 @@ public class ColumnInfo {
 
 	public String getName() {
 		return name;
+	}
+
+	public String getValueQuery() {
+		return valueQuery;
 	}
 
 	public List<String> getValues() {
@@ -58,7 +66,17 @@ public class ColumnInfo {
 		this.name = name;
 	}
 
+	public void setValueQuery(final String valueQuery) {
+		this.valueQuery = valueQuery;
+	}
+
 	public void setValues(final List<String> values) {
 		this.values = values;
+	}
+
+	@Override
+	public String toString() {
+		return "ColumnInfo [name=" + name + ", displayName=" + displayName + ", dataType=" + dataType + ", editType=" + editType
+				+ "]";
 	}
 }

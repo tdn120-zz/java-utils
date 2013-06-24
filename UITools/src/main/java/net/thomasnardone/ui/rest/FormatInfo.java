@@ -1,12 +1,22 @@
 package net.thomasnardone.ui.rest;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
+import net.thomasnardone.ui.DataType;
+
+@XmlRootElement
 public class FormatInfo {
-	private String	dataType;
-	private String	format;
+	private DataType	dataType;
+	private String		format;
 
 	public FormatInfo() {}
 
-	public String getDataType() {
+	public FormatInfo(final DataType dataType, final String format) {
+		this.dataType = dataType;
+		this.format = format;
+	}
+
+	public DataType getDataType() {
 		return dataType;
 	}
 
@@ -14,7 +24,7 @@ public class FormatInfo {
 		return format;
 	}
 
-	public void setDataType(final String dataType) {
+	public void setDataType(final DataType dataType) {
 		this.dataType = dataType;
 	}
 

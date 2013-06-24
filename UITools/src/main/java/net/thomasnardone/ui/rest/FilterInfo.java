@@ -2,8 +2,11 @@ package net.thomasnardone.ui.rest;
 
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 import net.thomasnardone.ui.FilterType;
 
+@XmlRootElement
 public class FilterInfo {
 	private int				column;
 	private String			columnName;
