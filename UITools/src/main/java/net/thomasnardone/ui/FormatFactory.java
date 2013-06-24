@@ -14,7 +14,7 @@ public class FormatFactory {
 	private FormatFactory() {}
 
 	public Format getFormat(final FormatInfo info) {
-		DataType type = DataType.valueOf(info.getDataType());
+		DataType type = info.getDataType();
 		String pattern = info.getFormat();
 		switch (type) {
 			case Date:

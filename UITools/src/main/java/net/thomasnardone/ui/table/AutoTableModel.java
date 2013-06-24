@@ -25,7 +25,7 @@ public class AutoTableModel extends AbstractTableModel {
 		this.formats = new Format[columns.size()];
 		Map<DataType, Format> formatMap = new HashMap<>();
 		for (FormatInfo info : formats) {
-			formatMap.put(DataType.valueOf(info.getDataType()), FormatFactory.getInstance().getFormat(info));
+			formatMap.put(info.getDataType(), FormatFactory.getInstance().getFormat(info));
 		}
 		for (int i = 0; i < this.columns.length; i++) {
 			this.formats[i] = formatMap.get(this.columns[i].getDataType());

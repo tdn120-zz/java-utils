@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import net.thomasnardone.ui.DataType;
 import net.thomasnardone.ui.table.ColumnManager;
 
 public class DummyTableClient extends TableClient {
@@ -122,7 +123,7 @@ public class DummyTableClient extends TableClient {
 	public TableInfo getTableInfo(final String tableName) {
 		List<FormatInfo> formats = new ArrayList<>();
 
-		formats.add(formatInfo("Integer", "#,##0"));
+		formats.add(formatInfo(DataType.Integer, "#,##0"));
 
 		Properties props = new Properties();
 		try {
@@ -159,7 +160,7 @@ public class DummyTableClient extends TableClient {
 		return info;
 	}
 
-	private FormatInfo formatInfo(final String dataType, final String format) {
+	private FormatInfo formatInfo(final DataType dataType, final String format) {
 		FormatInfo info = new FormatInfo();
 		info.setDataType(dataType);
 		info.setFormat(format);
