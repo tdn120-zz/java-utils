@@ -27,6 +27,7 @@ public class TableColumnEditor extends MyPanel implements ActionListener {
 	public static final String					FILTER_ACTION		= "column.toggleFilter";
 	public static final String					REMOVE_ACTION		= "column.remove";
 	public static final String					UP_ACTION			= "column.up";
+	public static final String					VALUE_QUERY_ACTION	= "column.toggleValueQuery";
 	private static final long					serialVersionUID	= 1L;
 	private static final int					STRUT				= 5;
 
@@ -41,6 +42,7 @@ public class TableColumnEditor extends MyPanel implements ActionListener {
 	private final JTextField					nameField;
 	private final JButton						removeButton;
 	private final JButton						upButton;
+	private final JToggleButton					valueButton;
 
 	public TableColumnEditor() {
 		this(null, null);
@@ -65,6 +67,8 @@ public class TableColumnEditor extends MyPanel implements ActionListener {
 		add(Box.createHorizontalStrut(STRUT));
 		add(filterButton = toggleButton("filter.png", "Toggle Filter"));
 		add(Box.createHorizontalStrut(STRUT));
+		add(valueButton = toggleButton("values.png", "Toggle Value Query"));
+		add(Box.createHorizontalStrut(STRUT));
 		add(addButton = button("add.png", "Add Column"));
 		add(Box.createHorizontalStrut(STRUT));
 		add(removeButton = button("remove.png", "Remove Column"));
@@ -78,6 +82,7 @@ public class TableColumnEditor extends MyPanel implements ActionListener {
 		setupAction(upButton, UP_ACTION);
 		setupAction(downButton, DOWN_ACTION);
 		setupAction(filterButton, FILTER_ACTION);
+		setupAction(valueButton, VALUE_QUERY_ACTION);
 		setupEditAction(nameField, EDIT_ACTION);
 		setupEditAction(displayNameField, EDIT_ACTION);
 		setupSelectAction(dataTypeCombo, EDIT_ACTION);
@@ -101,16 +106,24 @@ public class TableColumnEditor extends MyPanel implements ActionListener {
 		return filterButton.isSelected();
 	}
 
+	public boolean isValueQueryOn() {
+		return valueButton.isSelected();
+	}
+
 	public void loadColumnProperties(final Properties props) {
 		if (props == null) {
 			clear();
 		} else {
 			nameField.setText(column);
 			displayNameField.setText(props.getProperty(ColumnManager.PREFIX + column + "." + ColumnManager.DISPLAY_NAME));
-			dataTypeCombo.setSelectedItem(DataType.valueOf(props.getProperty(ColumnManager.PREFIX + column + "." + ColumnManager.DATA_TYPE)));
-			editTypeCombo.setSelectedItem(EditType.valueOf(props.getProperty(ColumnManager.PREFIX + column + "." + ColumnManager.EDIT_TYPE)));
+			dataTypeCombo.setSelectedItem(DataType.valueOf(props.getProperty(ColumnManager.PREFIX + column + "."
+					+ ColumnManager.DATA_TYPE)));
+			editTypeCombo.setSelectedItem(EditType.valueOf(props.getProperty(ColumnManager.PREFIX + column + "."
+					+ ColumnManager.EDIT_TYPE)));
 			final String filterType = props.getProperty(ColumnManager.FILTER + "." + column + "." + ColumnManager.TYPE);
 			filterButton.setSelected(filterType != null);
+			String valueQuery = props.getProperty(ColumnManager.PREFIX + column + "." + ColumnManager.VALUE_QUERY);
+			valueButton.setSelected(valueQuery != null);
 		}
 	}
 
@@ -125,10 +138,12 @@ public class TableColumnEditor extends MyPanel implements ActionListener {
 		String newColumn = nameField.getText();
 		props.setProperty(ColumnManager.PREFIX + newColumn + "." + ColumnManager.DISPLAY_NAME, getDisplayName());
 		if (dataTypeCombo.getSelectedIndex() > -1) {
-			props.setProperty(ColumnManager.PREFIX + newColumn + "." + ColumnManager.DATA_TYPE, dataTypeCombo.getSelectedItem().toString());
+			props.setProperty(ColumnManager.PREFIX + newColumn + "." + ColumnManager.DATA_TYPE, dataTypeCombo.getSelectedItem()
+					.toString());
 		}
 		if (editTypeCombo.getSelectedIndex() > -1) {
-			props.setProperty(ColumnManager.PREFIX + newColumn + "." + ColumnManager.EDIT_TYPE, editTypeCombo.getSelectedItem().toString());
+			props.setProperty(ColumnManager.PREFIX + newColumn + "." + ColumnManager.EDIT_TYPE, editTypeCombo.getSelectedItem()
+					.toString());
 		}
 	}
 

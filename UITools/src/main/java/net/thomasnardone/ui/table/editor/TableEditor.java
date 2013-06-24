@@ -44,14 +44,16 @@ import net.thomasnardone.ui.swing.MyPanel;
 import net.thomasnardone.ui.swing.UndoTextArea;
 import net.thomasnardone.ui.table.ColumnManager;
 import net.thomasnardone.ui.table.editor.TableColumnEditor.ColumnNameChangeListener;
+import net.thomasnardone.ui.table.editor.ValueQueryEditor.QueryChangeListener;
 import net.thomasnardone.ui.util.SortedProperties;
 
-public class TableEditor extends JFrame implements ActionListener, ColumnNameChangeListener, ArrangeListener {
+public class TableEditor extends JFrame implements ActionListener, ColumnNameChangeListener, ArrangeListener, QueryChangeListener {
+
 	private static final String			EXIT				= "exit";
+
 	private static final String			NEW					= "new";
 	private static final String			OPEN				= "open";
 	private static final Preferences	prefs				= Preferences.userNodeForPackage(TableEditor.class);
-	private static final String			QUERY				= "query";
 	private static final String			SAVE				= "save";
 	private static final String			SAVE_AS				= "save_as";
 	private static final long			serialVersionUID	= 1L;
@@ -75,12 +77,15 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 	private final JPanel							columnPanel;
 
 	private boolean									dirty;
+
 	private final Map<String, TableFilterEditor>	filterMap;
 	private final DragArrangePanel					filterPanel;
 	private final JComponent						mainPanel;
 	private File									propFile;
 	private final SortedProperties					props;
 	private final UndoTextArea						queryField;
+	private final Map<String, ValueQueryEditor>		valueQueryMap;
+	private final JPanel							valueQueryPanel;
 
 	public TableEditor(final String propFile) throws IOException {
 		super(TITLE);
@@ -94,9 +99,16 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 
 		props = new SortedProperties();
 
+		valueQueryMap = new HashMap<>();
 		JPanel queryPanel = new JPanel(new BorderLayout());
-		queryPanel.add(new JScrollPane(queryField = new UndoTextArea(10, 60)));
-		queryPanel.setBorder(BorderFactory.createTitledBorder("Query"));
+		JPanel tableQueryPanel = new JPanel(new BorderLayout());
+		tableQueryPanel.add(new JScrollPane(queryField = new UndoTextArea(10, 60)), BorderLayout.CENTER);
+		tableQueryPanel.setBorder(BorderFactory.createTitledBorder("Table Query"));
+		queryPanel.add(tableQueryPanel, BorderLayout.CENTER);
+		valueQueryPanel = new JPanel();
+		valueQueryPanel.setLayout(new BoxLayout(valueQueryPanel, BoxLayout.PAGE_AXIS));
+		valueQueryPanel.setBorder(BorderFactory.createTitledBorder("Value Queries"));
+		queryPanel.add(valueQueryPanel, BorderLayout.SOUTH);
 		queryField.getDocument().addDocumentListener(new DocumentAdapter() {
 			@Override
 			public void insertUpdate(final DocumentEvent e) {
@@ -175,19 +187,32 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 			} else {
 				removeFilter(editor.getColumnName());
 			}
+		} else if (TableColumnEditor.VALUE_QUERY_ACTION.equals(action)) {
+			TableColumnEditor editor = (TableColumnEditor) e.getSource();
+			if (editor.isValueQueryOn()) {
+				addValueQuery(editor.getColumnName(), -1);
+			} else {
+				removeValueQuery(editor.getColumnName());
+			}
 		}
 	}
 
 	@Override
 	public void columnNameChanged(final String oldName, final String newName) {
-		for (int i = 0; i < filterPanel.getRowCount(); i++) {
-			Component[] components = filterPanel.getRowComponents(i);
-			for (Component c : components) {
-				((TableFilterEditor) c).columnChanged(oldName, newName);
-			}
+		final TableFilterEditor filter = filterMap.remove(oldName);
+		if (filter != null) {
+			filter.columnChanged(oldName, newName);
+			filterMap.put(newName, filter);
+			filterPanel.validate();
+			filterPanel.repaint();
 		}
-		filterPanel.validate();
-		filterPanel.repaint();
+		final ValueQueryEditor editor = valueQueryMap.remove(oldName);
+		if (editor != null) {
+			editor.columnNameChanged(oldName, newName);
+			valueQueryMap.put(newName, editor);
+			editor.validate();
+			editor.repaint();
+		}
 	}
 
 	@Override
@@ -201,6 +226,11 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 			names.add(((TableColumnEditor) columnPanel.getComponent(i)).getColumnName());
 		}
 		return names;
+	}
+
+	@Override
+	public void queryChanged() {
+		setDirty();
 	}
 
 	private void addColumn(final MyPanel source) {
@@ -220,6 +250,16 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 		filterMap.put(columnName, newFilter);
 		filterPanel.addComponent(newFilter, row);
 		newFilter.revalidate();
+		setDirty();
+	}
+
+	private void addValueQuery(final String columnName, final int row) {
+		final ValueQueryEditor newEditor = new ValueQueryEditor(columnName);
+		newEditor.addQueryChangeListener(this);
+		valueQueryPanel.add(newEditor, row);
+		newEditor.revalidate();
+		valueQueryMap.put(columnName, newEditor);
+		setDirty();
 	}
 
 	private void clearPanels() {
@@ -349,7 +389,7 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 			props.load(new FileInputStream(propFile));
 			loadColumns();
 			loadFilters();
-			queryField.setText(props.getProperty(QUERY));
+			queryField.setText(props.getProperty(ColumnManager.QUERY));
 		} catch (IOException e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(this, "Exception occurred: " + e.toString(), "Error loading properties",
@@ -373,7 +413,17 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 		final TableFilterEditor filter = filterMap.remove(column);
 		if (filter != null) {
 			filterPanel.removeComponent(filter);
+			setDirty();
 		}
+	}
+
+	private void removeValueQuery(final String column) {
+		final ValueQueryEditor editor = valueQueryMap.remove(column);
+		if (editor != null) {
+			valueQueryPanel.remove(editor);
+			setDirty();
+		}
+
 	}
 
 	private void reset() {
@@ -392,7 +442,7 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 			props.clear();
 			saveColumns();
 			saveFilters();
-			props.setProperty(QUERY, queryField.getText());
+			props.setProperty(ColumnManager.QUERY, queryField.getText());
 			try {
 				final FileOutputStream output = new FileOutputStream(propFile);
 				props.store(output, "Created by " + getClass().getName());
