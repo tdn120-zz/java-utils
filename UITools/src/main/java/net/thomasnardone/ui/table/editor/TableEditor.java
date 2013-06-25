@@ -1,5 +1,10 @@
 package net.thomasnardone.ui.table.editor;
 
+import static net.thomasnardone.ui.table.TableManager.COLUMNS;
+import static net.thomasnardone.ui.table.TableManager.COLUMN_PREFIX;
+import static net.thomasnardone.ui.table.TableManager.FILTER_ROWS;
+import static net.thomasnardone.ui.table.TableManager.VALUE_QUERY;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -190,7 +195,7 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 		} else if (TableColumnEditor.VALUE_QUERY_ACTION.equals(action)) {
 			TableColumnEditor editor = (TableColumnEditor) e.getSource();
 			if (editor.isValueQueryOn()) {
-				addValueQuery(editor.getColumnName(), -1);
+				addValueQuery(editor.getColumnName(), null, -1);
 			} else {
 				removeValueQuery(editor.getColumnName());
 			}
@@ -253,8 +258,8 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 		setDirty();
 	}
 
-	private void addValueQuery(final String columnName, final int row) {
-		final ValueQueryEditor newEditor = new ValueQueryEditor(columnName);
+	private void addValueQuery(final String columnName, final String query, final int row) {
+		final ValueQueryEditor newEditor = new ValueQueryEditor(columnName, query);
 		newEditor.addQueryChangeListener(this);
 		valueQueryPanel.add(newEditor, row);
 		newEditor.revalidate();
@@ -262,9 +267,19 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 		setDirty();
 	}
 
+	private void clearPanel(final JPanel panel) {
+		panel.removeAll();
+		panel.revalidate();
+		panel.repaint();
+	}
+
 	private void clearPanels() {
-		columnPanel.removeAll();
-		filterPanel.removeAll();
+		queryField.setText("");
+		clearPanel(columnPanel);
+		clearPanel(filterPanel);
+		clearPanel(valueQueryPanel);
+		filterMap.clear();
+		valueQueryMap.clear();
 	}
 
 	private void exit() {
@@ -286,7 +301,7 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 	}
 
 	private void loadFilters() {
-		String rowCountProp = props.getProperty(TableManager.FILTER_ROWS);
+		String rowCountProp = props.getProperty(FILTER_ROWS);
 		if (rowCountProp != null) {
 			int rowCount = Integer.parseInt(rowCountProp);
 			for (int i = 0; i < rowCount; i++) {
@@ -296,6 +311,17 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 					editor.loadFilterProperties(props);
 					filterPanel.addComponent(editor, i);
 				}
+			}
+		}
+	}
+
+	private void loadValueQueries() {
+		String[] columns = props.getProperty(COLUMNS).split(" ");
+		int row = 0;
+		for (String column : columns) {
+			String valueQuery = props.getProperty(COLUMN_PREFIX + column + "." + VALUE_QUERY);
+			if (valueQuery != null) {
+				addValueQuery(column, valueQuery, row++);
 			}
 		}
 	}
@@ -389,6 +415,7 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 			props.load(new FileInputStream(propFile));
 			loadColumns();
 			loadFilters();
+			loadValueQueries();
 			queryField.setText(props.getProperty(TableManager.QUERY));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -442,6 +469,7 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 			props.clear();
 			saveColumns();
 			saveFilters();
+			saveValues();
 			props.setProperty(TableManager.QUERY, queryField.getText());
 			try {
 				final FileOutputStream output = new FileOutputStream(propFile);
@@ -520,6 +548,12 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 				filter.saveFilterProperties(props);
 			}
 			props.setProperty(TableManager.FILTER + "." + TableManager.ROW + i, filterList.toString());
+		}
+	}
+
+	private void saveValues() {
+		for (ValueQueryEditor editor : valueQueryMap.values()) {
+			editor.saveQuery(props);
 		}
 	}
 

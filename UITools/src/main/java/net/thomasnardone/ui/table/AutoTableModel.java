@@ -81,7 +81,7 @@ public class AutoTableModel extends AbstractTableModel {
 		return !(READ_ONLY.equals(columns[columnIndex].getEditType()));
 	}
 
-	public void loadData(final String[][] data) {
+	public void setData(final String[][] data) {
 		rawData = data;
 		fireTableDataChanged();
 	}

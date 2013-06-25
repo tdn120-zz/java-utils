@@ -1,7 +1,11 @@
 package net.thomasnardone.ui.table.editor;
 
+import static net.thomasnardone.ui.table.TableManager.COLUMN_PREFIX;
+import static net.thomasnardone.ui.table.TableManager.VALUE_QUERY;
+
 import java.awt.BorderLayout;
 import java.util.LinkedHashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
@@ -65,6 +69,10 @@ public class ValueQueryEditor extends MyPanel implements ColumnNameChangeListene
 
 	public void removeQueryChangeListener(final QueryChangeListener listener) {
 		listeners.remove(listener);
+	}
+
+	public void saveQuery(final Properties props) {
+		props.setProperty(COLUMN_PREFIX + columnName + "." + VALUE_QUERY, queryField.getText().trim());
 	}
 
 	public void setQuery(final String query) {

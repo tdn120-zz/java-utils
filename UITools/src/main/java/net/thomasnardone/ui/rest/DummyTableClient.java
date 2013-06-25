@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import net.thomasnardone.ui.DataType;
 import net.thomasnardone.ui.table.TableManager;
@@ -16,7 +15,7 @@ public class DummyTableClient extends TableClient {
 	public DummyTableClient() {}
 
 	@Override
-	public String[][] getData(final Set<String> queryParams) {
+	public String[][] getData(final String serviceName) {
 		return new String[][] { { "BlewLabel Perennials", "Achillea", "Apricot Delight", "#1", "Centerton", "800", "32" },
 				{ "BlewLabel Perennials", "Achillea", "Apricot Delight", "#2", "Centerton", "1600", "32" },
 				{ "BlewLabel Perennials", "Achillea", "Peachy Seduction", "#1", "Aris", "800", "32" },
@@ -120,7 +119,7 @@ public class DummyTableClient extends TableClient {
 	}
 
 	@Override
-	public TableInfo getTableInfo(final String tableName) {
+	public TableInfo getTableInfo(final String serviceName) {
 		List<FormatInfo> formats = new ArrayList<>();
 
 		formats.add(formatInfo(DataType.Integer, "#,##0"));

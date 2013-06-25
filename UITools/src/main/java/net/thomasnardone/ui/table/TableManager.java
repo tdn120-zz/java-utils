@@ -25,7 +25,7 @@ public class TableManager {
 	public static final String		EDIT_TYPE		= "editType";
 	public static final String		FILTER			= "filter";
 	public static final String		FILTER_ROWS		= FILTER + ".rows";
-	public static final String		PREFIX			= "column.";
+	public static final String		COLUMN_PREFIX			= "column.";
 	public static final String		QUERY			= "query";
 	public static final String		ROW				= "row";
 	public static final String		TYPE			= "type";
@@ -95,10 +95,10 @@ public class TableManager {
 		for (String column : columnSplit) {
 			ColumnInfo info = new ColumnInfo();
 			info.setName(column);
-			info.setDisplayName(props.getProperty(PREFIX + column + "." + DISPLAY_NAME));
-			info.setDataType(DataType.valueOf(props.getProperty(PREFIX + column + "." + DATA_TYPE)));
-			info.setEditType(EditType.valueOf(props.getProperty(PREFIX + column + "." + EDIT_TYPE)));
-			info.setValueQuery(props.getProperty(PREFIX + column + "." + VALUE_QUERY));
+			info.setDisplayName(props.getProperty(COLUMN_PREFIX + column + "." + DISPLAY_NAME));
+			info.setDataType(DataType.valueOf(props.getProperty(COLUMN_PREFIX + column + "." + DATA_TYPE)));
+			info.setEditType(EditType.valueOf(props.getProperty(COLUMN_PREFIX + column + "." + EDIT_TYPE)));
+			info.setValueQuery(props.getProperty(COLUMN_PREFIX + column + "." + VALUE_QUERY));
 			columns.add(info);
 		}
 
@@ -111,7 +111,7 @@ public class TableManager {
 					String filter = filtersInRow[j];
 					FilterInfo info = new FilterInfo();
 					info.setColumnName(filter);
-					info.setDisplayName(props.getProperty(PREFIX + filter + "." + DISPLAY_NAME, filter));
+					info.setDisplayName(props.getProperty(COLUMN_PREFIX + filter + "." + DISPLAY_NAME, filter));
 					info.setRow(i);
 					info.setColumn(j);
 					final String type = props.getProperty(FILTER + "." + filter + "." + TYPE);
