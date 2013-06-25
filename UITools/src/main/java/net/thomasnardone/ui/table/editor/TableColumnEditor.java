@@ -18,7 +18,7 @@ import net.thomasnardone.ui.DataType;
 import net.thomasnardone.ui.EditType;
 import net.thomasnardone.ui.swing.MyComboBox;
 import net.thomasnardone.ui.swing.MyPanel;
-import net.thomasnardone.ui.table.ColumnManager;
+import net.thomasnardone.ui.table.TableManager;
 
 public class TableColumnEditor extends MyPanel implements ActionListener {
 	public static final String					ADD_ACTION			= "column.add";
@@ -115,14 +115,14 @@ public class TableColumnEditor extends MyPanel implements ActionListener {
 			clear();
 		} else {
 			nameField.setText(column);
-			displayNameField.setText(props.getProperty(ColumnManager.PREFIX + column + "." + ColumnManager.DISPLAY_NAME));
-			dataTypeCombo.setSelectedItem(DataType.valueOf(props.getProperty(ColumnManager.PREFIX + column + "."
-					+ ColumnManager.DATA_TYPE)));
-			editTypeCombo.setSelectedItem(EditType.valueOf(props.getProperty(ColumnManager.PREFIX + column + "."
-					+ ColumnManager.EDIT_TYPE)));
-			final String filterType = props.getProperty(ColumnManager.FILTER + "." + column + "." + ColumnManager.TYPE);
+			displayNameField.setText(props.getProperty(TableManager.PREFIX + column + "." + TableManager.DISPLAY_NAME));
+			dataTypeCombo.setSelectedItem(DataType.valueOf(props.getProperty(TableManager.PREFIX + column + "."
+					+ TableManager.DATA_TYPE)));
+			editTypeCombo.setSelectedItem(EditType.valueOf(props.getProperty(TableManager.PREFIX + column + "."
+					+ TableManager.EDIT_TYPE)));
+			final String filterType = props.getProperty(TableManager.FILTER + "." + column + "." + TableManager.TYPE);
 			filterButton.setSelected(filterType != null);
-			String valueQuery = props.getProperty(ColumnManager.PREFIX + column + "." + ColumnManager.VALUE_QUERY);
+			String valueQuery = props.getProperty(TableManager.PREFIX + column + "." + TableManager.VALUE_QUERY);
 			valueButton.setSelected(valueQuery != null);
 		}
 	}
@@ -136,13 +136,13 @@ public class TableColumnEditor extends MyPanel implements ActionListener {
 			return;
 		}
 		String newColumn = nameField.getText();
-		props.setProperty(ColumnManager.PREFIX + newColumn + "." + ColumnManager.DISPLAY_NAME, getDisplayName());
+		props.setProperty(TableManager.PREFIX + newColumn + "." + TableManager.DISPLAY_NAME, getDisplayName());
 		if (dataTypeCombo.getSelectedIndex() > -1) {
-			props.setProperty(ColumnManager.PREFIX + newColumn + "." + ColumnManager.DATA_TYPE, dataTypeCombo.getSelectedItem()
+			props.setProperty(TableManager.PREFIX + newColumn + "." + TableManager.DATA_TYPE, dataTypeCombo.getSelectedItem()
 					.toString());
 		}
 		if (editTypeCombo.getSelectedIndex() > -1) {
-			props.setProperty(ColumnManager.PREFIX + newColumn + "." + ColumnManager.EDIT_TYPE, editTypeCombo.getSelectedItem()
+			props.setProperty(TableManager.PREFIX + newColumn + "." + TableManager.EDIT_TYPE, editTypeCombo.getSelectedItem()
 					.toString());
 		}
 	}

@@ -18,7 +18,7 @@ import net.thomasnardone.ui.rest.FilterInfo;
  * 
  * @author Thomas Nardone
  */
-public class ColumnManager {
+public class TableManager {
 	public static final String		COLUMNS			= "columns";
 	public static final String		DATA_TYPE		= "dataType";
 	public static final String		DISPLAY_NAME	= "displayName";
@@ -36,11 +36,11 @@ public class ColumnManager {
 	private String					query;
 
 	/**
-	 * Create an empty {@link ColumnManager} and load the properties from <tt>input</tt>.
+	 * Create an empty {@link TableManager} and load the properties from <tt>input</tt>.
 	 * 
 	 * @see Properties#load(InputStream)
 	 */
-	public ColumnManager(final InputStream input) throws IOException {
+	public TableManager(final InputStream input) throws IOException {
 		this();
 		Properties props = new Properties();
 		props.load(input);
@@ -48,28 +48,28 @@ public class ColumnManager {
 	}
 
 	/**
-	 * Create a {@link ColumnManager} from <tt>props</tt>.
+	 * Create a {@link TableManager} from <tt>props</tt>.
 	 * 
 	 * @param props
 	 */
-	public ColumnManager(final Properties props) {
+	public TableManager(final Properties props) {
 		this();
 		loadProperties(props);
 	}
 
 	/**
-	 * Create an empty {@link ColumnManager} and load the properties from <tt>reader</tt>.
+	 * Create an empty {@link TableManager} and load the properties from <tt>reader</tt>.
 	 * 
 	 * @see Properties#load(Reader)
 	 */
-	public ColumnManager(final Reader reader) throws IOException {
+	public TableManager(final Reader reader) throws IOException {
 		this();
 		Properties props = new Properties();
 		props.load(reader);
 		loadProperties(props);
 	}
 
-	private ColumnManager() {
+	private TableManager() {
 		columns = new ArrayList<>();
 		filters = new ArrayList<>();
 	}

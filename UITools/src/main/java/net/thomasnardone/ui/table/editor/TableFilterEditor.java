@@ -14,7 +14,7 @@ import net.thomasnardone.ui.FilterType;
 import net.thomasnardone.ui.swing.MyComboBox;
 import net.thomasnardone.ui.swing.MyPanel;
 import net.thomasnardone.ui.swing.SortedComboModel;
-import net.thomasnardone.ui.table.ColumnManager;
+import net.thomasnardone.ui.table.TableManager;
 
 public class TableFilterEditor extends MyPanel {
 	public static final String				EDIT_ACTION			= "filter.edit";
@@ -53,7 +53,7 @@ public class TableFilterEditor extends MyPanel {
 	}
 
 	public void loadFilterProperties(final Properties props) {
-		final String type = props.getProperty(ColumnManager.FILTER + "." + columnName + "." + ColumnManager.TYPE);
+		final String type = props.getProperty(TableManager.FILTER + "." + columnName + "." + TableManager.TYPE);
 		if (type != null) {
 			typeCombo.setSelectedItem(FilterType.valueOf(type));
 		} else {
@@ -62,6 +62,6 @@ public class TableFilterEditor extends MyPanel {
 	}
 
 	public void saveFilterProperties(final Properties props) {
-		props.put(ColumnManager.FILTER + "." + columnName + "." + ColumnManager.TYPE, typeCombo.getSelectedItem().toString());
+		props.put(TableManager.FILTER + "." + columnName + "." + TableManager.TYPE, typeCombo.getSelectedItem().toString());
 	}
 }

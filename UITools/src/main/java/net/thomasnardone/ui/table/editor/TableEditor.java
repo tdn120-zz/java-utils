@@ -42,7 +42,7 @@ import net.thomasnardone.ui.swing.DragArrangePanel;
 import net.thomasnardone.ui.swing.DragArrangePanel.ArrangeListener;
 import net.thomasnardone.ui.swing.MyPanel;
 import net.thomasnardone.ui.swing.UndoTextArea;
-import net.thomasnardone.ui.table.ColumnManager;
+import net.thomasnardone.ui.table.TableManager;
 import net.thomasnardone.ui.table.editor.TableColumnEditor.ColumnNameChangeListener;
 import net.thomasnardone.ui.table.editor.ValueQueryEditor.QueryChangeListener;
 import net.thomasnardone.ui.util.SortedProperties;
@@ -275,7 +275,7 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 	}
 
 	private void loadColumns() {
-		String[] columns = props.getProperty(ColumnManager.COLUMNS).split(" ");
+		String[] columns = props.getProperty(TableManager.COLUMNS).split(" ");
 		clearPanels();
 		for (String column : columns) {
 			if (column.trim().length() < 1) {
@@ -286,11 +286,11 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 	}
 
 	private void loadFilters() {
-		String rowCountProp = props.getProperty(ColumnManager.FILTER_ROWS);
+		String rowCountProp = props.getProperty(TableManager.FILTER_ROWS);
 		if (rowCountProp != null) {
 			int rowCount = Integer.parseInt(rowCountProp);
 			for (int i = 0; i < rowCount; i++) {
-				String[] filters = props.getProperty(ColumnManager.FILTER + "." + ColumnManager.ROW + i, "").split(" ");
+				String[] filters = props.getProperty(TableManager.FILTER + "." + TableManager.ROW + i, "").split(" ");
 				for (String filter : filters) {
 					TableFilterEditor editor = new TableFilterEditor(filter);
 					editor.loadFilterProperties(props);
@@ -389,7 +389,7 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 			props.load(new FileInputStream(propFile));
 			loadColumns();
 			loadFilters();
-			queryField.setText(props.getProperty(ColumnManager.QUERY));
+			queryField.setText(props.getProperty(TableManager.QUERY));
 		} catch (IOException e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(this, "Exception occurred: " + e.toString(), "Error loading properties",
@@ -442,7 +442,7 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 			props.clear();
 			saveColumns();
 			saveFilters();
-			props.setProperty(ColumnManager.QUERY, queryField.getText());
+			props.setProperty(TableManager.QUERY, queryField.getText());
 			try {
 				final FileOutputStream output = new FileOutputStream(propFile);
 				props.store(output, "Created by " + getClass().getName());
@@ -502,12 +502,12 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 			}
 			column.saveColumnProperties(props);
 		}
-		props.setProperty(ColumnManager.COLUMNS, columns.toString());
+		props.setProperty(TableManager.COLUMNS, columns.toString());
 	}
 
 	private void saveFilters() {
 		final int rowCount = filterPanel.getRowCount();
-		props.setProperty(ColumnManager.FILTER_ROWS, Integer.toString(rowCount));
+		props.setProperty(TableManager.FILTER_ROWS, Integer.toString(rowCount));
 		for (int i = 0; i < rowCount; i++) {
 			final Component[] components = filterPanel.getRowComponents(i);
 			StringBuilder filterList = new StringBuilder();
@@ -519,7 +519,7 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 				}
 				filter.saveFilterProperties(props);
 			}
-			props.setProperty(ColumnManager.FILTER + "." + ColumnManager.ROW + i, filterList.toString());
+			props.setProperty(TableManager.FILTER + "." + TableManager.ROW + i, filterList.toString());
 		}
 	}
 

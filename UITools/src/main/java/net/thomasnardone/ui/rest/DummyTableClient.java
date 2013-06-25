@@ -9,7 +9,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import net.thomasnardone.ui.DataType;
-import net.thomasnardone.ui.table.ColumnManager;
+import net.thomasnardone.ui.table.TableManager;
 
 public class DummyTableClient extends TableClient {
 
@@ -131,7 +131,7 @@ public class DummyTableClient extends TableClient {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		ColumnManager mgr = new ColumnManager(props);
+		TableManager mgr = new TableManager(props);
 
 		List<ColumnInfo> columns = mgr.getColumns();
 		for (ColumnInfo column : columns) {
