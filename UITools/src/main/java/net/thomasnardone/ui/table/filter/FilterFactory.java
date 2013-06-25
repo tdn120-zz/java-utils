@@ -10,10 +10,6 @@ public class FilterFactory {
 				return new ComboFilter(filterInfo);
 			case Text:
 				return new TextFilter(filterInfo);
-			case Multi:
-				// TODO
-			case Range:
-				// TODO
 			default:
 				return new TextFilter(filterInfo);
 		}
