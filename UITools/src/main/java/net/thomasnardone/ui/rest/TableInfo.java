@@ -9,6 +9,7 @@ public class TableInfo {
 	private List<ColumnInfo>	columns;
 	private List<FilterInfo>	filters;
 	private List<FormatInfo>	formats;
+	private List<String>		keyFields;
 
 	public TableInfo() {}
 
@@ -24,6 +25,10 @@ public class TableInfo {
 		return formats;
 	}
 
+	public List<String> getKeyFields() {
+		return keyFields;
+	}
+
 	public void setColumns(final List<ColumnInfo> columns) {
 		this.columns = columns;
 	}
@@ -34,5 +39,9 @@ public class TableInfo {
 
 	public void setFormats(final List<FormatInfo> formats) {
 		this.formats = formats;
+	}
+
+	public void setKeyFields(final List<String> keyFields) {
+		this.keyFields = keyFields;
 	}
 }

@@ -16,6 +16,7 @@ import javax.swing.SwingWorker;
 import net.thomasnardone.ui.rest.AutoTableClient;
 import net.thomasnardone.ui.rest.FilterInfo;
 import net.thomasnardone.ui.rest.TableInfo;
+import net.thomasnardone.ui.rest.UpdateInfo;
 import net.thomasnardone.ui.swing.CenterPanel;
 import net.thomasnardone.ui.table.filter.AbstractFilter;
 import net.thomasnardone.ui.table.filter.FilterFactory;
@@ -27,45 +28,22 @@ public class AutoTable extends JPanel implements FilterListener {
 	private static final long		serialVersionUID	= 1L;
 
 	private final AutoTableClient	client;
-	private AutoTableModel			model;
-	private CenterPanel				progressPanel;
-	private JScrollPane				scrollPane;
 
+	private AutoTableModel			model;
+	private final CenterPanel		progressPanel;
+	private JScrollPane				scrollPane;
 	private final String			serviceName;
 
-	private JXTable					table;
+	private final JXTable			table;
 
 	public AutoTable(final AutoTableClient client, final String serviceName) {
 		this.client = client;
 		this.serviceName = serviceName;
 		progressPanel = new CenterPanel();
-
-		new SwingWorker<TableInfo, Void>() {
-			@Override
-			protected TableInfo doInBackground() throws Exception {
-				return client.getTableInfo(serviceName);
-			}
-
-			@Override
-			protected void done() {
-				try {
-					TableInfo info = get();
-					initTable(info);
-					reload();
-				} catch (InterruptedException | ExecutionException e) {
-					e.printStackTrace();
-					progressPanel.setComponent(new JLabel("Error occurred, please check logs."));
-					revalidate();
-				}
-			}
-		}.execute();
+		table = new JXTable();
+		table.setAutoResizeMode(JXTable.AUTO_RESIZE_OFF);
 		setLayout(new BorderLayout());
-		final JProgressBar progressBar = new JProgressBar();
-		progressBar.setString("Loading table info...");
-		progressBar.setStringPainted(true);
-		progressBar.setIndeterminate(true);
-		progressPanel.setComponent(progressBar);
-		add(progressPanel, BorderLayout.CENTER);
+		reloadAll();
 	}
 
 	@Override
@@ -74,49 +52,27 @@ public class AutoTable extends JPanel implements FilterListener {
 	}
 
 	public void reload() {
-		JProgressBar dataBar = new JProgressBar();
-		dataBar.setString("Loading table data");
-		dataBar.setStringPainted(true);
-		dataBar.setIndeterminate(true);
-		progressPanel.setComponent(dataBar);
-		if (scrollPane != null) {
-			remove(scrollPane);
-		}
-		add(progressPanel);
-		dataBar.setLocation((getWidth() / 2) - (dataBar.getWidth() / 2), (getHeight() / 2) - (dataBar.getHeight() / 2));
-		new SwingWorker<String[][], Void>() {
+		new DataWorker().execute();
+	}
 
-			@Override
-			protected String[][] doInBackground() throws Exception {
-				return client.getData(serviceName);
-			}
+	public void reloadAll() {
+		new InfoWorker().execute();
+	}
 
-			@Override
-			protected void done() {
-				try {
-					remove(progressPanel);
-					model.setData(get());
-					table.packAll();
-					scrollPane = new JScrollPane(table);
-					add(scrollPane, BorderLayout.CENTER);
-					revalidate();
-				} catch (InterruptedException | ExecutionException e) {
-					e.printStackTrace();
-					progressPanel.setComponent(new JLabel("Error occurred, please check logs."));
-					revalidate();
-				}
-			}
-		}.execute();
-		revalidate();
+	public void saveChanges() {
+		new SaveWorker().execute();
+	}
+
+	private void fireSaveSuccessful(final boolean success) {
+		// TODO
 	}
 
 	private void initTable(final TableInfo info) {
-		model = new AutoTableModel(info.getColumns(), info.getFormats());
-		table = new JXTable(model);
+		model = new AutoTableModel(info.getColumns(), info.getFormats(), info.getKeyFields());
+		table.setModel(model);
 		for (int i = 0; i < table.getColumnCount(); i++) {
 			table.getColumn(i).setCellEditor(EditorFactory.getEditor(info.getColumns().get(i), model.getFormat(i)));
 		}
-		table.setAutoResizeMode(JXTable.AUTO_RESIZE_OFF);
 		JPanel filterPanel = new JPanel(new GridBagLayout());
 		GridBagConstraints cons = new GridBagConstraints();
 		cons.weightx = 1.0;
@@ -134,5 +90,96 @@ public class AutoTable extends JPanel implements FilterListener {
 		removeAll();
 		add(filterPanel, BorderLayout.NORTH);
 		invalidate();
+	}
+
+	private final class DataWorker extends SwingWorker<String[][], Void> {
+		public DataWorker() {
+			JProgressBar dataBar = new JProgressBar();
+			dataBar.setString("Loading table data");
+			dataBar.setStringPainted(true);
+			dataBar.setIndeterminate(true);
+			progressPanel.setComponent(dataBar);
+			if (scrollPane != null) {
+				remove(scrollPane);
+			}
+			add(progressPanel);
+			revalidate();
+		}
+
+		@Override
+		protected String[][] doInBackground() throws Exception {
+			return client.getData(serviceName);
+		}
+
+		@Override
+		protected void done() {
+			try {
+				model.setData(get());
+				table.packAll();
+				scrollPane = new JScrollPane(table);
+				remove(progressPanel);
+				add(scrollPane, BorderLayout.CENTER);
+				revalidate();
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+				progressPanel.setComponent(new JLabel("Error occurred, please check logs."));
+				revalidate();
+			}
+		}
+	}
+
+	private final class InfoWorker extends SwingWorker<TableInfo, Void> {
+		public InfoWorker() {
+			final JProgressBar progressBar = new JProgressBar();
+			progressBar.setString("Loading table info...");
+			progressBar.setStringPainted(true);
+			progressBar.setIndeterminate(true);
+			progressPanel.setComponent(progressBar);
+			add(progressPanel, BorderLayout.CENTER);
+		}
+
+		@Override
+		protected TableInfo doInBackground() throws Exception {
+			return client.getTableInfo(serviceName);
+		}
+
+		@Override
+		protected void done() {
+			try {
+				TableInfo info = get();
+				initTable(info);
+				reload();
+			} catch (InterruptedException | ExecutionException | IllegalArgumentException e) {
+				e.printStackTrace();
+				progressPanel.setComponent(new JLabel("Error occurred, please check logs."));
+				revalidate();
+			}
+		}
+	}
+
+	private class SaveWorker extends SwingWorker<Boolean, Void> {
+		private final List<UpdateInfo>	changes;
+
+		public SaveWorker() {
+			changes = model.getChanges();
+		}
+
+		@Override
+		protected Boolean doInBackground() throws Exception {
+			return client.updateTable(serviceName, changes);
+		}
+
+		@Override
+		protected void done() {
+			Boolean success;
+			try {
+				success = get();
+			} catch (InterruptedException | ExecutionException e) {
+				// TODO error handling?
+				e.printStackTrace();
+				success = false;
+			}
+			fireSaveSuccessful(success);
+		}
 	}
 }

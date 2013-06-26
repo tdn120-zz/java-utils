@@ -1,5 +1,9 @@
 package net.thomasnardone.ui.rest;
 
+import java.util.List;
+
+import javax.ws.rs.core.MediaType;
+
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
@@ -51,6 +55,13 @@ public class AutoTableClient extends TableClient {
 	public TableInfo getTableInfo(final String serviceName) {
 		final WebResource resource = getResource(serviceName, "info");
 		return resource.get(TableInfo.class);
+	}
+
+	@Override
+	public boolean updateTable(final String serviceName, final List<UpdateInfo> update) {
+		System.out.println("Updates: " + update);
+		final WebResource resource = getResource(serviceName, "update");
+		return resource.type(MediaType.APPLICATION_JSON).post(Boolean.class, update);
 	}
 
 	private WebResource getResource(final String serviceName, final String function) {

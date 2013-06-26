@@ -26,10 +26,12 @@ import java.util.Properties;
 import java.util.prefs.Preferences;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -47,6 +49,7 @@ import net.thomasnardone.ui.swing.DragArrangePanel;
 import net.thomasnardone.ui.swing.DragArrangePanel.ArrangeListener;
 import net.thomasnardone.ui.swing.MyPanel;
 import net.thomasnardone.ui.swing.UndoTextArea;
+import net.thomasnardone.ui.swing.UndoTextField;
 import net.thomasnardone.ui.table.TableManager;
 import net.thomasnardone.ui.table.editor.TableColumnEditor.ColumnNameChangeListener;
 import net.thomasnardone.ui.table.editor.ValueQueryEditor.QueryChangeListener;
@@ -85,11 +88,16 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 
 	private final Map<String, TableFilterEditor>	filterMap;
 	private final DragArrangePanel					filterPanel;
+	private UndoTextField							keyFieldsField;
 	private final JComponent						mainPanel;
 	private File									propFile;
 	private final SortedProperties					props;
 	private final UndoTextArea						queryField;
+	private final JPanel							updatePanel;
+	private UndoTextField							updateTableField;
+
 	private final Map<String, ValueQueryEditor>		valueQueryMap;
+
 	private final JPanel							valueQueryPanel;
 
 	public TableEditor(final String propFile) throws IOException {
@@ -107,14 +115,28 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 		valueQueryMap = new HashMap<>();
 		JPanel queryPanel = new JPanel(new BorderLayout());
 		JPanel tableQueryPanel = new JPanel(new BorderLayout());
-		tableQueryPanel.add(new JScrollPane(queryField = new UndoTextArea(10, 60)), BorderLayout.CENTER);
+		tableQueryPanel.add(new JScrollPane(queryField = new UndoTextArea(10, 60)));
 		tableQueryPanel.setBorder(BorderFactory.createTitledBorder("Table Query"));
 		queryPanel.add(tableQueryPanel, BorderLayout.CENTER);
+		JPanel bottomQueryPanel = new JPanel(new BorderLayout());
 		valueQueryPanel = new JPanel();
 		valueQueryPanel.setLayout(new BoxLayout(valueQueryPanel, BoxLayout.PAGE_AXIS));
 		valueQueryPanel.setBorder(BorderFactory.createTitledBorder("Value Queries"));
-		queryPanel.add(valueQueryPanel, BorderLayout.SOUTH);
-		queryField.getDocument().addDocumentListener(new DocumentAdapter() {
+		bottomQueryPanel.add(valueQueryPanel, BorderLayout.NORTH);
+
+		updatePanel = new JPanel();
+		updatePanel.setLayout(new BoxLayout(updatePanel, BoxLayout.LINE_AXIS));
+		updatePanel.setBorder(BorderFactory.createTitledBorder("Updates"));
+		updatePanel.add(new JLabel("DB Table:"));
+		updatePanel.add(updateTableField = new UndoTextField(10));
+		updatePanel.add(Box.createHorizontalStrut(10));
+		updatePanel.add(new JLabel("Key Fields:"));
+		updatePanel.add(keyFieldsField = new UndoTextField(20));
+		keyFieldsField.setToolTipText("Comma separated list of key fields in the update table");
+		bottomQueryPanel.add(updatePanel, BorderLayout.SOUTH);
+		queryPanel.add(bottomQueryPanel, BorderLayout.SOUTH);
+
+		final DocumentAdapter dirtyTextListener = new DocumentAdapter() {
 			@Override
 			public void insertUpdate(final DocumentEvent e) {
 				setDirty();
@@ -124,7 +146,10 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 			public void removeUpdate(final DocumentEvent e) {
 				setDirty();
 			}
-		});
+		};
+		queryField.getDocument().addDocumentListener(dirtyTextListener);
+		updateTableField.getDocument().addDocumentListener(dirtyTextListener);
+		keyFieldsField.getDocument().addDocumentListener(dirtyTextListener);
 
 		columnPanel = new JPanel();
 		columnPanel.setLayout(new BoxLayout(columnPanel, BoxLayout.PAGE_AXIS));
@@ -275,6 +300,8 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 
 	private void clearPanels() {
 		queryField.setText("");
+		updateTableField.setText("");
+		keyFieldsField.setText("");
 		clearPanel(columnPanel);
 		clearPanel(filterPanel);
 		clearPanel(valueQueryPanel);
@@ -313,6 +340,11 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 				}
 			}
 		}
+	}
+
+	private void loadUpdateInfo() {
+		updateTableField.setText(props.getProperty(TableManager.UPDATE_TABLE, ""));
+		keyFieldsField.setText(props.getProperty(TableManager.KEY_FIELDS, ""));
 	}
 
 	private void loadValueQueries() {
@@ -415,6 +447,7 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 			props.load(new FileInputStream(propFile));
 			loadColumns();
 			loadFilters();
+			loadUpdateInfo();
 			loadValueQueries();
 			queryField.setText(props.getProperty(TableManager.QUERY));
 		} catch (IOException e) {
@@ -469,6 +502,7 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 			props.clear();
 			saveColumns();
 			saveFilters();
+			saveUpdateInfo();
 			saveValues();
 			props.setProperty(TableManager.QUERY, queryField.getText());
 			try {
@@ -548,6 +582,15 @@ public class TableEditor extends JFrame implements ActionListener, ColumnNameCha
 				filter.saveFilterProperties(props);
 			}
 			props.setProperty(TableManager.FILTER + "." + TableManager.ROW + i, filterList.toString());
+		}
+	}
+
+	private void saveUpdateInfo() {
+		String updateTable = updateTableField.getText().trim();
+		String keyFields = keyFieldsField.getText().trim();
+		if (!(updateTable.isEmpty() || keyFields.isEmpty())) {
+			props.setProperty(TableManager.UPDATE_TABLE, updateTable);
+			props.setProperty(TableManager.KEY_FIELDS, keyFields);
 		}
 	}
 

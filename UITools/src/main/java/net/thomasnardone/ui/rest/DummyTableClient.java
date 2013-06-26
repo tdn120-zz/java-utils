@@ -159,6 +159,11 @@ public class DummyTableClient extends TableClient {
 		return info;
 	}
 
+	@Override
+	public boolean updateTable(final String serviceName, final List<UpdateInfo> update) {
+		return true;
+	}
+
 	private FormatInfo formatInfo(final DataType dataType, final String format) {
 		FormatInfo info = new FormatInfo();
 		info.setDataType(dataType);
