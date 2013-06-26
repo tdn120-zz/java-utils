@@ -30,7 +30,7 @@ public abstract class AbstractFilter extends JPanel {
 		return filterInfo.getColumnName();
 	}
 
-	public abstract boolean include(Object value);
+	public abstract boolean include(String value);
 
 	public void removeFilterListener(final FilterListener listener) {
 		listeners.remove(listener);

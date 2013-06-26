@@ -25,7 +25,7 @@ public class AutoRowFilter extends RowFilter<TableModel, Integer> {
 		for (int i = 0; i < model.getColumnCount(); i++) {
 			final String column = model.getColumnId(i);
 			final AbstractFilter filter = filterMap.get(column);
-			if ((filter != null) && !filter.include(entry.getValue(i))) {
+			if ((filter != null) && !filter.include(entry.getStringValue(i))) {
 				return false;
 			}
 		}

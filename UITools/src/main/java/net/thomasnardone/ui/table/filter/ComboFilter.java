@@ -18,7 +18,7 @@ public class ComboFilter extends AbstractFilter {
 	}
 
 	@Override
-	public boolean include(final Object value) {
+	public boolean include(final String value) {
 		if ("".equals(combo.getSelectedItem())) {
 			return true;
 		}

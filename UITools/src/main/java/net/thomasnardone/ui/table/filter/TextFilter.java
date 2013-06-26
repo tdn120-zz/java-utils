@@ -18,8 +18,8 @@ public class TextFilter extends AbstractFilter {
 	}
 
 	@Override
-	public boolean include(final Object value) {
-		return (pattern == null) || pattern.matcher(((String) value).toLowerCase()).matches();
+	public boolean include(final String value) {
+		return (pattern == null) || pattern.matcher(value.toLowerCase()).matches();
 	}
 
 	@Override
