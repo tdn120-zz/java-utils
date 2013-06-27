@@ -112,6 +112,17 @@ public class AutoTableModel extends AbstractTableModel {
 		return ret;
 	}
 
+	public boolean isDirty(final int row, final int column) {
+		return rows[row].dirty[column];
+	}
+
+	public void resetDirty() {
+		for (Row row : rows) {
+			row.resetDirty();
+		}
+		fireTableDataChanged();
+	}
+
 	public void setData(final String[][] data) {
 		rows = new Row[data.length];
 		for (int i = 0; i < rows.length; i++) {
@@ -123,12 +134,16 @@ public class AutoTableModel extends AbstractTableModel {
 	@Override
 	public void setValueAt(final Object aValue, final int rowIndex, final int columnIndex) {
 		Format format = formats[columnIndex];
+		String newValue = null;
 		if ((format == null) || (aValue instanceof String)) {
-			rows[rowIndex].setValue(columnIndex, String.valueOf(aValue));
+			newValue = String.valueOf(aValue);
 		} else {
-			System.out.println("Formatting " + aValue.getClass());
-			rows[rowIndex].setValue(columnIndex, format.format(aValue));
+			if (aValue == null) { // Nothing set/selected - go back to original value
+				return;
+			}
+			newValue = format.format(aValue);
 		}
+		rows[rowIndex].setValue(columnIndex, newValue);
 		fireTableCellUpdated(rowIndex, columnIndex);
 	}
 
@@ -177,7 +192,18 @@ public class AutoTableModel extends AbstractTableModel {
 			return false;
 		}
 
+		public void resetDirty() {
+			Arrays.fill(dirty, false);
+			// update key values to current values
+			for (int i = 0; i < keyMap.length; i++) {
+				keyValues[i] = values[keyMap[i]];
+			}
+		}
+
 		public void setValue(final int i, final String value) {
+			if (value.equals(values[i])) {
+				return;
+			}
 			values[i] = value;
 			dirty[i] = true;
 		}
