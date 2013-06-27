@@ -41,8 +41,7 @@ public class AutoTableClient extends TableClient {
 	 */
 	@Override
 	public String[][] getData(final String serviceName) {
-		final WebResource resource = getResource(serviceName, "data");
-		return resource.get(String[][].class);
+		return getResource(serviceName, "data").get(String[][].class);
 	}
 
 	/**
@@ -53,18 +52,22 @@ public class AutoTableClient extends TableClient {
 	 */
 	@Override
 	public TableInfo getTableInfo(final String serviceName) {
-		final WebResource resource = getResource(serviceName, "info");
-		return resource.get(TableInfo.class);
+		return getResource(serviceName, "info").get(TableInfo.class);
 	}
 
+	/**
+	 * Update the table data on the server.
+	 * 
+	 * @param serviceName
+	 *            The service name, set with an <code>@Path()</code> definition on the service class.
+	 */
 	@Override
 	public boolean updateTable(final String serviceName, final List<UpdateInfo> update) {
-		System.out.println("Updates: " + update);
-		final WebResource resource = getResource(serviceName, "update");
-		return resource.type(MediaType.APPLICATION_JSON).post(Boolean.class, update);
+		return getResource(serviceName, "update").post(Boolean.class, update);
 	}
 
-	private WebResource getResource(final String serviceName, final String function) {
-		return client.resource(host).path(servletName).path(serviceName).path(function);
+	private WebResource.Builder getResource(final String serviceName, final String function) {
+		return client.resource(host).path(servletName).path(serviceName).path(function).type(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON);
 	}
 }
