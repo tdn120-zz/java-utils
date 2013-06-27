@@ -4,6 +4,9 @@ import java.awt.GraphicsConfiguration;
 import java.awt.HeadlessException;
 
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  * Version of JFrame that handles some basics - set the close operation, pack, and center the frame in the window.
@@ -46,9 +49,20 @@ public abstract class MyFrame extends JFrame {
 	protected abstract void setupFrame();
 
 	private void construct(final int closeOperation) {
-		setupFrame();
-		setDefaultCloseOperation(closeOperation);
-		pack();
-		setLocationRelativeTo(null);
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+				} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+						| UnsupportedLookAndFeelException e) {
+					e.printStackTrace();
+				}
+				setupFrame();
+				setDefaultCloseOperation(closeOperation);
+				pack();
+				setLocationRelativeTo(null);
+			}
+		});
 	}
 }
