@@ -14,7 +14,6 @@ public final class SortedComboModel<T extends Comparable<T>> extends AbstractLis
 	private T					selectedItem;
 
 	public SortedComboModel() {
-		super();
 		this.items = new ArrayList<>();
 	}
 
