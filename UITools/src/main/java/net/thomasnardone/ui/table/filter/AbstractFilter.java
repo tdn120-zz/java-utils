@@ -26,6 +26,8 @@ public abstract class AbstractFilter extends JPanel {
 		listeners.add(listener);
 	}
 
+	public abstract void clear();
+
 	public String getColumnName() {
 		return filterInfo.getColumnName();
 	}

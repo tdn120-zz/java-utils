@@ -7,7 +7,7 @@ import java.util.List;
 
 import net.thomasnardone.ui.rest.FilterInfo;
 import net.thomasnardone.ui.swing.MyComboBox;
-import net.thomasnardone.ui.swing.SortedComboModel;
+import net.thomasnardone.ui.swing.OrderedComboModel;
 
 @SuppressWarnings("serial")
 public class ComboFilter extends AbstractFilter {
@@ -15,6 +15,12 @@ public class ComboFilter extends AbstractFilter {
 
 	public ComboFilter(final FilterInfo filterInfo) {
 		super(filterInfo);
+	}
+
+	@Override
+	public void clear() {
+		combo.setSelectedItem("");
+		repaint();
 	}
 
 	@Override
@@ -51,7 +57,7 @@ public class ComboFilter extends AbstractFilter {
 		if (filterValues != null) {
 			values.addAll(filterValues);
 		}
-		combo.setModel(new SortedComboModel<String>(values));
+		combo.setModel(new OrderedComboModel<String>(values));
 		if (item != null) {
 			combo.setSelectedItem(item);
 		} else {
