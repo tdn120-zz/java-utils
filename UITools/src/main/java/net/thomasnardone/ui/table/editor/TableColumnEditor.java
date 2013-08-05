@@ -53,9 +53,9 @@ public class TableColumnEditor extends MyPanel implements ActionListener {
 		nameChangeListeners = new LinkedHashSet<>();
 		this.column = column;
 		add(Box.createHorizontalStrut(STRUT));
-		add(upButton = button("up.png", "Move Up"));
+		add(upButton = button("resources/up.png", "Move Up"));
 		add(Box.createHorizontalStrut(STRUT));
-		add(downButton = button("down.png", "Move Down"));
+		add(downButton = button("resources/down.png", "Move Down"));
 		add(Box.createHorizontalStrut(STRUT));
 		add(borderPanel(nameField = new JTextField(10), "Name"));
 		add(Box.createHorizontalStrut(STRUT));
@@ -65,13 +65,13 @@ public class TableColumnEditor extends MyPanel implements ActionListener {
 		add(Box.createHorizontalStrut(STRUT));
 		add(borderPanel(editTypeCombo = new MyComboBox<>(EditType.values()), "Edit Type"));
 		add(Box.createHorizontalStrut(STRUT));
-		add(filterButton = toggleButton("filter.png", "Toggle Filter"));
+		add(filterButton = toggleButton("resources/filter.png", "Toggle Filter"));
 		add(Box.createHorizontalStrut(STRUT));
-		add(valueButton = toggleButton("values.png", "Toggle Value Query"));
+		add(valueButton = toggleButton("resources/values.png", "Toggle Value Query"));
 		add(Box.createHorizontalStrut(STRUT));
-		add(addButton = button("add.png", "Add Column"));
+		add(addButton = button("resources/add.png", "Add Column"));
 		add(Box.createHorizontalStrut(STRUT));
-		add(removeButton = button("remove.png", "Remove Column"));
+		add(removeButton = button("resources/remove.png", "Remove Column"));
 		add(Box.createHorizontalStrut(STRUT));
 
 		loadColumnProperties(props);
@@ -138,12 +138,12 @@ public class TableColumnEditor extends MyPanel implements ActionListener {
 		String newColumn = nameField.getText();
 		props.setProperty(TableManager.COLUMN_PREFIX + newColumn + "." + TableManager.DISPLAY_NAME, getDisplayName());
 		if (dataTypeCombo.getSelectedIndex() > -1) {
-			props.setProperty(TableManager.COLUMN_PREFIX + newColumn + "." + TableManager.DATA_TYPE, dataTypeCombo.getSelectedItem()
-					.toString());
+			props.setProperty(TableManager.COLUMN_PREFIX + newColumn + "." + TableManager.DATA_TYPE, dataTypeCombo
+					.getSelectedItem().toString());
 		}
 		if (editTypeCombo.getSelectedIndex() > -1) {
-			props.setProperty(TableManager.COLUMN_PREFIX + newColumn + "." + TableManager.EDIT_TYPE, editTypeCombo.getSelectedItem()
-					.toString());
+			props.setProperty(TableManager.COLUMN_PREFIX + newColumn + "." + TableManager.EDIT_TYPE, editTypeCombo
+					.getSelectedItem().toString());
 		}
 	}
 

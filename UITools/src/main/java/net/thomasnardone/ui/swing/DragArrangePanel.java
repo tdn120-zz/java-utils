@@ -21,7 +21,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-
 /**
  * Panel that can be used to arrange components via mouse dragging. Since it's all in the same panel, drag and drop, and the
  * serialization it involves, is not required.
@@ -340,7 +339,7 @@ public class DragArrangePanel extends MyPanel {
 		public DragPanel(final Component content) {
 			super(new FlowLayout(FlowLayout.LEFT));
 			this.content = content;
-			dragComponent = new JLabel(loadIcon("drag.png"));
+			dragComponent = new JLabel(loadIcon("resources/drag.png"));
 			dragComponent.setCursor(new Cursor(Cursor.HAND_CURSOR));
 			add(dragComponent);
 			add(content);
